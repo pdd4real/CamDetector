@@ -1,0 +1,27 @@
+{
+  "motion": [
+    { "time": 0, "x": 0, "y": 0 },
+    { "time": 5, "x": 0.4, "y": 0.1 },
+    { "time": 10, "x": 0.9, "y": 0.18 },
+    { "time": 15, "x": 1.25, "y": 0.35 },
+    { "time": 20, "x": 1.75, "y": 0.55 }
+  ],
+  "bitrateSeries": [
+    { "time": 0, "kbps": 58 },
+    { "time": 5, "kbps": 64 },
+    { "time": 10, "kbps": 79 },
+    { "time": 15, "kbps": 185 },
+    { "time": 20, "kbps": 238 },
+    { "time": 25, "kbps": 216 },
+    { "time": 30, "kbps": 260 },
+    { "time": 35, "kbps": 118 },
+    { "time": 40, "kbps": 76 }
+  ],
+  "precise": {
+    "directionDeg": 182,
+    "distanceMeters": 1.68,
+    "signalStrength": 87,
+    "box": { "x": 48, "y": 36, "width": 10, "height": 16 }
+  }
+}
+

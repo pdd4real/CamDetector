@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/charts.tsx","./src/components/featurepanel.tsx","./src/components/mobileflow.tsx","./src/components/packettable.tsx","./src/components/radarpanel.tsx","./src/components/roomlocator.tsx","./src/lib/simulator.ts"],"version":"5.9.3"}

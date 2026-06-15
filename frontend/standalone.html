@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CamDetector Standalone Demo</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #1f2937;
+        background: #edf3f8;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100vh;
+        background: #edf3f8;
+      }
+      .shell {
+        width: min(1280px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 34px;
+      }
+      header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(24px, 3vw, 36px);
+        letter-spacing: 0;
+      }
+      .tag {
+        margin: 0 0 6px;
+        color: #587082;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button {
+        border: 1px solid #d8e2ec;
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: #fff;
+        color: #253143;
+        font: inherit;
+        cursor: pointer;
+      }
+      button.active,
+      .primary {
+        border-color: #4e73f8;
+        background: #4e73f8;
+        color: white;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(340px, 1fr) 390px minmax(340px, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+      .panel,
+      .phone {
+        border: 1px solid #dbe5ee;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 10px 28px rgba(43, 61, 87, 0.08);
+      }
+      .panel {
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .panel-title {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-weight: 900;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #edf1f5;
+        text-align: left;
+        white-space: nowrap;
+      }
+      .table-wrap {
+        max-height: 255px;
+        overflow: auto;
+        border: 1px solid #edf1f5;
+        border-radius: 8px;
+      }
+      .result {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #fff7e8;
+        border: 1px solid #f3c979;
+      }
+      .result.ok {
+        background: #edf9f2;
+        border-color: #a7dfba;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .feature {
+        padding: 10px;
+        border-radius: 8px;
+        background: #f7fafc;
+        border: 1px solid #e3eaf1;
+      }
+      .feature strong {
+        display: block;
+        font-size: 22px;
+      }
+      .bar {
+        height: 7px;
+        margin: 8px 0;
+        border-radius: 99px;
+        background: #e7edf4;
+        overflow: hidden;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        background: #4e73f8;
+      }
+      .phone {
+        padding: 16px;
+        background: #f8fafc;
+      }
+      .phone h2 {
+        margin: -16px -16px 14px;
+        padding: 16px;
+        border-bottom: 1px solid #edf1f5;
+        background: #fff;
+        text-align: center;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding-bottom: 14px;
+        border-bottom: 5px solid #edf1f5;
+      }
+      .step {
+        display: grid;
+        gap: 6px;
+        place-items: center;
+        color: #a3adb8;
+        font-size: 12px;
+        text-align: center;
+      }
+      .step b {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border-radius: 50%;
+        background: #edf1f5;
+        font-size: 20px;
+      }
+      .step.active {
+        color: #4e73f8;
+        font-weight: 800;
+      }
+      .step.active b {
+        background: #4e73f8;
+        color: #fff;
+      }
+      .phone-card {
+        display: grid;
+        min-height: 390px;
+        place-items: center;
+        margin: 16px 0;
+        padding: 18px;
+        border-radius: 8px;
+        background: #fff;
+        text-align: center;
+      }
+      .ring {
+        display: grid;
+        width: 140px;
+        height: 140px;
+        margin: 24px auto 0;
+        place-items: center;
+        border-radius: 50%;
+      }
+      .ring span {
+        display: grid;
+        width: 104px;
+        height: 104px;
+        place-items: center;
+        border-radius: 50%;
+        background: #fff;
+        color: #4e73f8;
+        font-size: 30px;
+        font-weight: 900;
+      }
+      .state b {
+        display: grid;
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 14px;
+        place-items: center;
+        border-radius: 50%;
+        background: #f0ca38;
+        color: #fff;
+        font-size: 42px;
+      }
+      .state.ok b {
+        background: #7ac75a;
+      }
+      .radar {
+        position: relative;
+        width: 190px;
+        height: 190px;
+        margin: 18px auto;
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff 0 28%, #eff4fb 29% 100%);
+      }
+      .radar i {
+        position: absolute;
+        left: 93px;
+        top: 16px;
+        width: 5px;
+        height: 82px;
+        transform-origin: 50% 78px;
+        background: #4e73f8;
+      }
+      .room {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        aspect-ratio: 16/9;
+      }
+      .room img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .box {
+        position: absolute;
+        left: 47%;
+        top: 34%;
+        width: 12%;
+        height: 18%;
+        border: 3px solid #e64032;
+        border-radius: 3px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .stats div {
+        padding: 10px;
+        border-radius: 8px;
+        background: #f7fafc;
+      }
+      svg {
+        width: 100%;
+        height: 150px;
+      }
+      @media (max-width: 1100px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .phone {
+          width: min(430px, 100%);
+          margin: 0 auto 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div>
+          <p class="tag">CamDetector Standalone</p>
+          <h1>隐藏无线摄像头感知与定位演示</h1>
+        </div>
+        <div class="toolbar" id="scenarios"></div>
+      </header>
+      <section class="grid">
+        <div>
+          <div class="panel">
+            <div class="panel-title"><span>802.11 数据包解析</span><small id="frameCount"></small></div>
+            <div class="table-wrap"><table id="packetTable"></table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><span>流量识别</span><small>SVM surrogate</small></div>
+            <div class="result" id="resultBox"></div>
+            <div id="features" class="features"></div>
+          </div>
+        </div>
+        <section class="phone">
+          <h2>摄像头探测器</h2>
+          <div class="steps" id="steps"></div>
+          <div class="phone-card" id="phoneCard"></div>
+          <button class="primary" id="nextBtn">下一步</button>
+        </section>
+        <div>
+          <div class="panel">
+            <div class="panel-title"><span>方向定位</span><small>CUSUM + motion</small></div>
+            <div id="radarPanel"></div>
+            <svg id="bitrateChart" viewBox="0 0 300 140"></svg>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><span>精准定位</span><small>room overlay</small></div>
+            <div class="room"><img src="public/assets/demo-room.png" alt="demo room" /><i class="box" id="roomBox"></i></div>
+            <div class="stats"><div>信号强度 <strong id="signal"></strong></div><div>距离 <strong id="distance"></strong></div></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      const STEPS = ["数据收集", "流量识别", "方向定位", "精准定位"];
+      const CAMERA_FRAMES = [
+        [0, "tp:ln:k1:a4:45:02", "ff:ff:ff:ff:ff:ff", 221, "Management", "Beacon", 42],
+        [1, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1287, "Data", "QoS Data", 58],
+        [3, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1245, "Data", "QoS Data", 60],
+        [5, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1320, "Data", "QoS Data", 62],
+        [7, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1198, "Data", "QoS Data", 64],
+        [10, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1388, "Data", "QoS Data", 66],
+        [14, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1410, "Data", "QoS Data", 71],
+        [20, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1438, "Data", "QoS Data", 78],
+        [24, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1450, "Data", "QoS Data", 84],
+        [30, "9a:22:31:18:ac:01", "tp:ln:k1:a4:45:02", 1404, "Data", "QoS Data", 87]
+      ];
+      const NO_CAMERA_FRAMES = [
+        [0, "tp:ln:k1:a4:45:02", "ff:ff:ff:ff:ff:ff", 221, "Management", "Beacon", 44],
+        [1, "ap:47:bd:2d:10:03", "tp:ln:k1:a4:45:02", 236, "Data", "Ack", 42],
+        [3, "bc:5e:ab:18:20:04", "tp:ln:k1:a4:45:02", 415, "Data", "IPv4", 36],
+        [7, "sp:kr:20:16:10:05", "tp:ln:k1:a4:45:02", 310, "Data", "IPv4", 39],
+        [9, "bc:5e:ab:18:20:04", "tp:ln:k1:a4:45:02", 520, "Data", "IPv4", 37],
+        [14, "sp:kr:20:16:10:05", "tp:ln:k1:a4:45:02", 256, "Data", "IPv4", 40]
+      ];
+      const BITRATE = [
+        { time: 0, kbps: 58 }, { time: 5, kbps: 64 }, { time: 10, kbps: 79 }, { time: 15, kbps: 185 },
+        { time: 20, kbps: 238 }, { time: 25, kbps: 216 }, { time: 30, kbps: 260 }, { time: 35, kbps: 118 }
+      ];
+      const SCENARIOS = [
+        { id: "camera", name: "检测到摄像头", status: "success", mode: "toward", frames: CAMERA_FRAMES },
+        { id: "none", name: "未检测到摄像头", status: "success", mode: "outside", frames: NO_CAMERA_FRAMES },
+        { id: "fail", name: "采集失败", status: "failed", mode: "outside", frames: [] },
+        { id: "reverse", name: "需要反向移动", status: "success", mode: "reverse", frames: CAMERA_FRAMES.slice(0, 7) }
+      ];
+      let scenario = SCENARIOS[0];
+      let stage = 0;
+
+      document.getElementById("nextBtn").onclick = () => {
+        stage = stage >= 3 ? 0 : stage + 1;
+        render();
+      };
+
+      function render() {
+        renderScenarioButtons();
+        const frames = scenario.frames.map(toFrame);
+        const progress = scenario.status === "failed" ? 14 : Math.min(100, 30 + stage * 24);
+        const visibleFrames = stage === 0 ? frames.slice(0, Math.ceil(frames.length * progress / 100)) : frames;
+        const groups = groupTraffic(frames);
+        const result = scenario.id === "none" || scenario.id === "fail" ? { hasCamera: false, confidence: 0.38 } : classify(groups);
+        const feature = groups[0] ? extractFeature(groups[0]) : null;
+        const loc = localization(result);
+
+        document.getElementById("frameCount").textContent = `${visibleFrames.length} frames`;
+        renderTable(visibleFrames);
+        renderFeatures(feature);
+        renderResult(result);
+        renderSteps();
+        renderPhone(progress, result, loc);
+        renderRadar(loc);
+        renderLine(BITRATE);
+        document.getElementById("roomBox").style.display = stage >= 3 && result.hasCamera ? "block" : "none";
+        document.getElementById("signal").textContent = `${loc.signal}%`;
+        document.getElementById("distance").textContent = loc.distance ? `${loc.distance} 米` : "--";
+      }
+
+      function renderScenarioButtons() {
+        document.getElementById("scenarios").innerHTML = SCENARIOS.map((item) =>
+          `<button class="${item.id === scenario.id ? "active" : ""}" data-id="${item.id}">${item.name}</button>`
+        ).join("");
+        document.querySelectorAll("[data-id]").forEach((btn) => btn.onclick = () => {
+          scenario = SCENARIOS.find((item) => item.id === btn.dataset.id);
+          stage = 0;
+          render();
+        });
+      }
+
+      function renderTable(frames) {
+        document.getElementById("packetTable").innerHTML = `
+          <thead><tr><th>#</th><th>Time</th><th>Source</th><th>Destination</th><th>Type</th><th>Length</th><th>Signal</th></tr></thead>
+          <tbody>${frames.map((f, i) => `<tr><td>${i + 1}</td><td>${f.time}s</td><td>${f.source}</td><td>${f.destination}</td><td>${f.frameType}/${f.subtype}</td><td>${f.length}</td><td>${f.signal}%</td></tr>`).join("") || `<tr><td colspan="7">等待采集数据包</td></tr>`}</tbody>`;
+      }
+
+      function renderFeatures(feature) {
+        const items = feature ? [["L", feature.L], ["d", feature.d], ["b", feature.b], ["s", feature.s]] : [];
+        document.getElementById("features").innerHTML = items.map(([name, value]) =>
+          `<div class="feature"><strong>${name}</strong><div class="bar"><i style="width:${value * 100}%"></i></div><span>${value.toFixed(3)}</span></div>`
+        ).join("");
+      }
+
+      function renderResult(result) {
+        const box = document.getElementById("resultBox");
+        box.className = `result ${result.hasCamera ? "" : "ok"}`;
+        box.innerHTML = `<strong>${result.hasCamera ? "检测到摄像头特征" : "未检测到摄像头"}</strong><span>置信度 ${(result.confidence * 100).toFixed(1)}%</span>`;
+      }
+
+      function renderSteps() {
+        document.getElementById("steps").innerHTML = STEPS.map((label, index) =>
+          `<div class="step ${index <= stage ? "active" : ""}"><b>${index + 1}</b><span>${label}</span></div>`
+        ).join("");
+      }
+
+      function renderPhone(progress, result, loc) {
+        const card = document.getElementById("phoneCard");
+        if (stage === 0) {
+          card.innerHTML = scenario.status === "failed"
+            ? `<div class="state"><b>!</b><h3>数据收集失败</h3><p>当前网络环境较差，无法捕获数据包</p></div>`
+            : `<div><h3>数据收集</h3><p>正在收集周围网络数据，保持手机 Wi-Fi 开启...</p><div class="ring" style="background:conic-gradient(#4e73f8 ${progress}%,#e8edf5 0)"><span>${progress}%</span></div></div>`;
+        } else if (stage === 1) {
+          card.innerHTML = `<div class="state ${result.hasCamera ? "" : "ok"}"><b>${result.hasCamera ? "!" : "✓"}</b><h3>${result.hasCamera ? "当前房间内存在摄像头" : "未检测到摄像头"}</h3><p>${result.hasCamera ? "点击下一步精准定位摄像头" : "流量分类器未在数据包中检测到摄像头特征"}</p></div>`;
+        } else if (stage === 2) {
+          card.innerHTML = `<div><h3>粗略定位</h3><p>${loc.text}</p><div class="radar"><i style="transform:rotate(${loc.direction}deg)"></i></div></div>`;
+        } else {
+          card.innerHTML = `<div><h3>精准定位</h3><p>已标注疑似摄像头位置</p><div class="room"><img src="public/assets/demo-room.png" alt=""><i class="box"></i></div></div>`;
+        }
+      }
+
+      function renderRadar(loc) {
+        document.getElementById("radarPanel").innerHTML = `<div class="radar"><i style="transform:rotate(${loc.direction}deg)"></i></div><strong>${loc.text}</strong>`;
+      }
+
+      function renderLine(series) {
+        const minX = Math.min(...series.map(p => p.time));
+        const maxX = Math.max(...series.map(p => p.time));
+        const minY = Math.min(...series.map(p => p.kbps));
+        const maxY = Math.max(...series.map(p => p.kbps));
+        const path = series.map((p, i) => {
+          const x = 18 + (p.time - minX) / Math.max(1, maxX - minX) * 268;
+          const y = 124 - (p.kbps - minY) / Math.max(1, maxY - minY) * 106;
+          return `${i ? "L" : "M"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+        }).join(" ");
+        document.getElementById("bitrateChart").innerHTML = `<path d="${path}" fill="none" stroke="#e86b38" stroke-width="3" stroke-linecap="round"></path>`;
+      }
+
+      function toFrame(row) {
+        return { time: row[0], source: row[1], destination: row[2], length: row[3], frameType: row[4], subtype: row[5], signal: row[6] };
+      }
+
+      function groupTraffic(frames) {
+        const buckets = new Map();
+        for (const frame of frames) {
+          const mac = frame.source;
+          if (mac === "ff:ff:ff:ff:ff:ff") continue;
+          if (!buckets.has(mac)) buckets.set(mac, []);
+          buckets.get(mac).push(frame);
+        }
+        return [...buckets.entries()].filter(([, frames]) => frames.length >= 4).map(([mac, frames]) => ({ mac, frames }));
+      }
+
+      function extractFeature(group) {
+        const lengths = group.frames.map(f => f.length);
+        const bitrates = BITRATE.map(p => p.kbps);
+        const avg = mean(bitrates);
+        return {
+          L: clamp(mean(lengths) / 1400),
+          d: clamp(std(lengths) / 520),
+          b: clamp(Math.max(...bitrates) / Math.max(avg, 1) / 3),
+          s: clamp(1 - 0.22)
+        };
+      }
+
+      function classify(groups) {
+        const feature = extractFeature(groups[0]);
+        const score = feature.L * 1.15 + feature.d * 0.72 + feature.b * 1.45 + feature.s * 0.95 - 1.85;
+        return { hasCamera: score > 0.48, confidence: 1 / (1 + Math.exp(-score)) };
+      }
+
+      function localization(result) {
+        if (!result.hasCamera || scenario.mode === "outside") return { direction: 0, signal: 28, distance: 0, text: "当前房间不存在摄像头，可切换房间继续采集" };
+        if (scenario.mode === "reverse") return { direction: 208, signal: 54, distance: 2.5, text: "请往反方向移动，直到出现新的提示" };
+        return { direction: 182, signal: 87, distance: 1.68, text: "请缓慢移动手机，沿箭头方向靠近疑似位置" };
+      }
+
+      function mean(values) { return values.reduce((a, b) => a + b, 0) / Math.max(1, values.length); }
+      function std(values) { const m = mean(values); return Math.sqrt(mean(values.map(v => (v - m) ** 2))); }
+      function clamp(value) { return Math.max(0, Math.min(1, value)); }
+
+      render();
+    </script>
+  </body>
+</html>

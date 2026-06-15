@@ -1,0 +1,23 @@
+{
+  "vendors": {
+    "tp:ln:k1:a4:45:02": "TP-Link Router",
+    "ap:47:bd:2d:10:03": "Apple iPhone",
+    "bc:5e:ab:18:20:04": "Laptop",
+    "sp:kr:20:16:10:05": "Smart Speaker"
+  },
+  "frames": [
+    { "time": 0, "source": "tp:ln:k1:a4:45:02", "destination": "ff:ff:ff:ff:ff:ff", "length": 221, "frameType": "Management", "subtype": "Beacon", "signal": 44 },
+    { "time": 1, "source": "ap:47:bd:2d:10:03", "destination": "tp:ln:k1:a4:45:02", "length": 236, "frameType": "Data", "subtype": "Acknowledgement", "signal": 42 },
+    { "time": 3, "source": "bc:5e:ab:18:20:04", "destination": "tp:ln:k1:a4:45:02", "length": 415, "frameType": "Data", "subtype": "IPv4", "signal": 36 },
+    { "time": 5, "source": "ap:47:bd:2d:10:03", "destination": "tp:ln:k1:a4:45:02", "length": 180, "frameType": "Data", "subtype": "Acknowledgement", "signal": 43 },
+    { "time": 7, "source": "sp:kr:20:16:10:05", "destination": "tp:ln:k1:a4:45:02", "length": 310, "frameType": "Data", "subtype": "IPv4", "signal": 39 },
+    { "time": 9, "source": "bc:5e:ab:18:20:04", "destination": "tp:ln:k1:a4:45:02", "length": 520, "frameType": "Data", "subtype": "IPv4", "signal": 37 },
+    { "time": 11, "source": "ap:47:bd:2d:10:03", "destination": "tp:ln:k1:a4:45:02", "length": 298, "frameType": "Data", "subtype": "IPv4", "signal": 45 },
+    { "time": 14, "source": "sp:kr:20:16:10:05", "destination": "tp:ln:k1:a4:45:02", "length": 256, "frameType": "Data", "subtype": "IPv4", "signal": 40 },
+    { "time": 17, "source": "bc:5e:ab:18:20:04", "destination": "tp:ln:k1:a4:45:02", "length": 470, "frameType": "Data", "subtype": "IPv4", "signal": 35 },
+    { "time": 20, "source": "ap:47:bd:2d:10:03", "destination": "tp:ln:k1:a4:45:02", "length": 190, "frameType": "Data", "subtype": "Acknowledgement", "signal": 41 },
+    { "time": 24, "source": "sp:kr:20:16:10:05", "destination": "tp:ln:k1:a4:45:02", "length": 335, "frameType": "Data", "subtype": "IPv4", "signal": 38 },
+    { "time": 30, "source": "tp:ln:k1:a4:45:02", "destination": "ff:ff:ff:ff:ff:ff", "length": 221, "frameType": "Management", "subtype": "Beacon", "signal": 44 }
+  ]
+}
+

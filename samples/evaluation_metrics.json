@@ -1,0 +1,20 @@
+{
+  "sampleSizeCurve": [
+    { "samples": 5, "tpr": 0.995, "tnr": 0.989 },
+    { "samples": 10, "tpr": 0.995, "tnr": 0.990 },
+    { "samples": 15, "tpr": 0.993, "tnr": 0.989 },
+    { "samples": 20, "tpr": 0.994, "tnr": 0.991 }
+  ],
+  "motionDurationCurve": [
+    { "duration": 5, "tpr": 0.70 },
+    { "duration": 10, "tpr": 0.80 },
+    { "duration": 15, "tpr": 0.99 },
+    { "duration": 20, "tpr": 0.99 }
+  ],
+  "brandResults": [
+    { "brand": "Ezviz", "tpr": 96.7, "tnr": 96.7, "sar": 96.7 },
+    { "brand": "Dahua", "tpr": 100.0, "tnr": 93.3, "sar": 96.7 },
+    { "brand": "Yi", "tpr": 96.7, "tnr": 100.0, "sar": 98.3 }
+  ]
+}
+
