@@ -23,13 +23,13 @@ const pageOrder: PageId[] = ["overview", "detection", "localization", "mobile", 
 const pageTokens = new Set<PageId>(pageOrder);
 
 const routes: { id: PageId; label: string; subtitle: string }[] = [
-  { id: "overview", label: "首页", subtitle: "项目总览" },
-  { id: "detection", label: "流量识别", subtitle: "采集与判别" },
-  { id: "localization", label: "方向定位", subtitle: "雷达与标注" },
-  { id: "mobile", label: "手机流程", subtitle: "四步操作" },
-  { id: "algorithms", label: "算法链路", subtitle: "特征与模型" },
-  { id: "evaluation", label: "实验评估", subtitle: "指标面板" },
-  { id: "repository", label: "工程结构", subtitle: "代码边界" },
+  { id: "overview", label: "首页", subtitle: "平台介绍" },
+  { id: "detection", label: "检测控制台", subtitle: "流量识别" },
+  { id: "localization", label: "定位工作台", subtitle: "方向标注" },
+  { id: "mobile", label: "移动端流程", subtitle: "四步交互" },
+  { id: "algorithms", label: "高级工具", subtitle: "模型链路" },
+  { id: "evaluation", label: "风险报告", subtitle: "实验指标" },
+  { id: "repository", label: "系统设置", subtitle: "工程边界" },
 ];
 
 const data = demoData as unknown as {
@@ -114,6 +114,8 @@ export default function App() {
 
   return (
     <main className="site-shell">
+      <div className="particles-bg" />
+      <div className="grid-overlay" />
       <header className="topbar">
         <button className="brand-button" onClick={() => goToPage("overview")} aria-label="返回首页">
           <span>CamDetector</span>
@@ -230,6 +232,11 @@ export default function App() {
 
         {page === "repository" ? <RepositoryPage /> : null}
       </section>
+
+      <footer className="site-footer">
+        <strong>CamDetector</strong>
+        <span>演示数据均为合成样本，不执行真实 Wi-Fi 抓包、破解或设备控制。</span>
+      </footer>
     </main>
   );
 }
@@ -254,18 +261,25 @@ function HeroSection({
   return (
     <section className="hero-section">
       <div className="hero-content">
-        <p className="eyebrow">802.11 流量感知 · SVM 识别 · CUSUM 定位</p>
+        <p className="eyebrow">802.11 Sensing · SVM Detection · CUSUM Localization</p>
         <h1>CamDetector</h1>
+        <h2>隐藏无线摄像头智能感知平台</h2>
         <p className="hero-text">
-          面向隐藏无线摄像头发现与定位的可视化系统。页面覆盖数据采集、帧解析、流量识别、方向定位、精准标注和实验评估，适合比赛现场讲解与录屏展示。
+          以无线流量为线索，串联数据采集、帧解析、特征识别、方向定位、房间标注和风险报告，构建一个适合比赛答辩与在线展示的完整安全检测系统。
         </p>
         <div className="hero-actions">
           <button className="primary-action" onClick={onStart}>
-            进入检测流程
+            启动检测控制台
           </button>
           <button className="ghost-action" onClick={onLocate}>
-            查看定位画面
+            查看定位工作台
           </button>
+        </div>
+        <div className="hero-badges">
+          <span>合成样本</span>
+          <span>离线演示</span>
+          <span>GitHub Pages</span>
+          <span>安全边界</span>
         </div>
       </div>
       <div className="hero-board">
@@ -281,6 +295,14 @@ function HeroSection({
             <strong>{detection.hasCamera ? "发现疑似无线摄像头" : "当前未发现目标"}</strong>
             <span>{localization.instruction}</span>
           </div>
+        </div>
+        <div className="threat-radar">
+          <span className="radar-orbit orbit-a" />
+          <span className="radar-orbit orbit-b" />
+          <span className="radar-beam" style={{ transform: `rotate(${localization.directionDeg}deg)` }} />
+          <span className="radar-center" />
+          <strong>{formatPct(detection.confidence)}</strong>
+          <small>SVM confidence</small>
         </div>
         <MetricTile label="当前场景" value={scenario.name} />
         <MetricTile label="采集进度" value={`${captureProgress}%`} tone="cyan" />
@@ -317,6 +339,18 @@ function OverviewPage({
     ["展示边界", "使用合成样本数据，不调用真实抓包、破解或硬件接口"],
   ];
   const workflow = ["采集周围无线帧", "按 MAC 聚合流量", "提取包长与比特率特征", "SVM 判断候选目标", "移动中估计方向", "房间画面红框标注"];
+  const stats = [
+    ["99.5%", "模拟 TPR", "摄像头流量识别真阳性率"],
+    ["99.0%", "模拟 TNR", "非摄像头场景排除能力"],
+    ["4", "演示脚本", "覆盖发现、未发现、失败和反向移动"],
+    ["0", "真实抓包", "不包含攻击命令或硬件调用"],
+  ];
+  const stack = [
+    ["前端平台", "Vite + React + TypeScript，适配 GitHub Pages 静态部署。"],
+    ["算法核心", "Packet Parser、Feature Extractor、SVM Classifier、CUSUM Detector、Locator。"],
+    ["数据资产", "合成 802.11 帧、MAC 厂商信息、比特率序列、定位路径和评估曲线。"],
+    ["展示模块", "检测控制台、定位工作台、移动端流程、风险报告、高级工具和系统设置。"],
+  ];
   const entries = [
     { title: "采集与解析", text: "模拟周围 802.11 数据帧，展示时间戳、MAC、帧类型、包长和信号强度。", action: onOpenDetection },
     { title: "流量识别", text: "提取包长分布、突发度和平滑度，输出摄像头候选目标与置信度。", action: onOpenDetection },
@@ -328,6 +362,25 @@ function OverviewPage({
 
   return (
     <div className="page-grid">
+      <section className="product-intro">
+        <div className="product-copy">
+          <p className="section-kicker">Platform Overview</p>
+          <h2>新一代无线摄像头安全感知演示平台</h2>
+          <p>
+            参考完整安全平台的展示方式，CamDetector 将产品介绍、演示控制台、风险报告、高级工具与系统边界整合在一个仓库中。评委可以先理解项目价值，再进入具体交互流程。
+          </p>
+        </div>
+        <div className="stat-wall">
+          {stats.map(([value, label, text]) => (
+            <div className="stat-card" key={label}>
+              <strong>{value}</strong>
+              <span>{label}</span>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="section-card overview-highlight">
         <div>
           <p className="section-kicker">System Overview</p>
@@ -351,6 +404,23 @@ function OverviewPage({
             <p>{entry.text}</p>
           </button>
         ))}
+      </section>
+
+      <section className="stack-section">
+        <div className="section-card stack-title">
+          <p className="section-kicker">Technical Architecture</p>
+          <h2>系统架构</h2>
+          <p>从合成流量到可视化定位，每一层都对应仓库中的代码和文档模块，便于答辩时按工程结构展开说明。</p>
+        </div>
+        <div className="stack-grid">
+          {stack.map(([title, text], index) => (
+            <div className="stack-card" key={title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{title}</strong>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="project-profile">
@@ -378,6 +448,18 @@ function OverviewPage({
             <strong>{item}</strong>
           </div>
         ))}
+      </section>
+
+      <section className="cta-band">
+        <div>
+          <p className="section-kicker">Online Demo</p>
+          <h2>直接进入可交互演示</h2>
+          <span>无需后端服务，所有模块均从仓库内合成数据读取，适合 GitHub Pages、PPT 嵌入和现场录屏。</span>
+        </div>
+        <div className="hero-actions">
+          <button className="primary-action" onClick={onOpenDetection}>打开检测控制台</button>
+          <button className="ghost-action dark" onClick={onOpenEvaluation}>查看风险报告</button>
+        </div>
       </section>
     </div>
   );
