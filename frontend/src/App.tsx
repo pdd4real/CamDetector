@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import demoData from "./data/demoData.json";
 import { BitrateChart, CdfChart, MetricBars } from "./components/Charts";
 import { FeaturePanel } from "./components/FeaturePanel";
@@ -269,6 +269,19 @@ function HeroSection({
         </div>
       </div>
       <div className="hero-board">
+        <div className="signal-preview">
+          <div className="room-scan">
+            <span className="scan-grid" />
+            <span className="scan-path" />
+            <span className="scan-target" />
+            <span className="scan-phone" />
+          </div>
+          <div className="signal-copy">
+            <small>Live Sensing View</small>
+            <strong>{detection.hasCamera ? "发现疑似无线摄像头" : "当前未发现目标"}</strong>
+            <span>{localization.instruction}</span>
+          </div>
+        </div>
         <MetricTile label="当前场景" value={scenario.name} />
         <MetricTile label="采集进度" value={`${captureProgress}%`} tone="cyan" />
         <MetricTile label="识别置信度" value={formatPct(detection.confidence)} tone={detection.hasCamera ? "amber" : "green"} />
@@ -297,6 +310,13 @@ function OverviewPage({
   onOpenAlgorithms: () => void;
   onOpenEvaluation: () => void;
 }) {
+  const profile = [
+    ["项目定位", "面向隐蔽无线摄像头的发现、识别与定位展示系统"],
+    ["识别对象", "持续上传视频流、包长分布稳定、比特率随距离变化的无线设备"],
+    ["技术路线", "802.11 帧解析、L/d/b/s 特征、SVM 分类、CUSUM 趋势检测、移动辅助定位"],
+    ["展示边界", "使用合成样本数据，不调用真实抓包、破解或硬件接口"],
+  ];
+  const workflow = ["采集周围无线帧", "按 MAC 聚合流量", "提取包长与比特率特征", "SVM 判断候选目标", "移动中估计方向", "房间画面红框标注"];
   const entries = [
     { title: "采集与解析", text: "模拟周围 802.11 数据帧，展示时间戳、MAC、帧类型、包长和信号强度。", action: onOpenDetection },
     { title: "流量识别", text: "提取包长分布、突发度和平滑度，输出摄像头候选目标与置信度。", action: onOpenDetection },
@@ -330,6 +350,33 @@ function OverviewPage({
             <strong>{entry.title}</strong>
             <p>{entry.text}</p>
           </button>
+        ))}
+      </section>
+
+      <section className="project-profile">
+        <div className="section-card profile-main">
+          <p className="section-kicker">Project Information</p>
+          <h2>作品信息</h2>
+          <p>
+            CamDetector 将无线流量特征识别、移动趋势判断和房间画面标注整合到一个可讲解的网页系统中。页面只展示作品能力与技术边界，不包含任何个人信息。
+          </p>
+        </div>
+        <div className="profile-grid">
+          {profile.map(([label, text]) => (
+            <div className="profile-item" key={label}>
+              <span>{label}</span>
+              <strong>{text}</strong>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="workflow-strip">
+        {workflow.map((item, index) => (
+          <div className="workflow-node" key={item}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{item}</strong>
+          </div>
         ))}
       </section>
     </div>
@@ -799,3 +846,4 @@ function readPageFromLocation(): PageId {
   const route = parts.find((part) => pageTokens.has(part as PageId)) as PageId | undefined;
   return route && pageTokens.has(route) ? route : "overview";
 }
+
