@@ -86,7 +86,12 @@ function renderStage(
       <div className="collecting">
         <h3>{T.captureTitle}</h3>
         <p>{T.captureText}</p>
-        <div className="ring-progress" style={{ background: `conic-gradient(#4e73f8 ${captureProgress}%, #e8edf5 0)` }}>
+        <div
+          className="ring-progress"
+          style={{
+            background: `conic-gradient(var(--neon-cyan, #00ffcc) ${captureProgress}%, rgba(255,255,255,0.08) 0)`,
+          }}
+        >
           <span>{captureProgress}%</span>
         </div>
       </div>

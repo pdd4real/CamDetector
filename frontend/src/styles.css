@@ -1703,6 +1703,69 @@ button { color: inherit; }
   font-size: 22px;
 }
 
+/* ─── Page banner (sub-page header replacing hero) ──────────── */
+.page-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 20px;
+  align-items: center;
+  padding: clamp(20px, 3vw, 36px) clamp(20px, 3vw, 40px);
+  border: 1px solid rgba(0, 255, 204, 0.14);
+  border-radius: 26px;
+  background:
+    radial-gradient(ellipse at 12% 50%, rgba(0, 255, 204, 0.09) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 20%, rgba(0, 180, 255, 0.08) 0%, transparent 44%),
+    rgba(7, 12, 24, 0.86);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.page-banner-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.page-banner-h1 {
+  margin: 4px 0 0;
+  font-size: clamp(28px, 3.6vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+  color: transparent;
+  background: linear-gradient(100deg, var(--neon-cyan) 0%, var(--neon-blue) 55%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.page-banner-sub {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 560px;
+}
+
+.page-banner-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 960px) {
+  .page-banner {
+    grid-template-columns: 1fr;
+  }
+  .page-banner-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page-banner-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* ─── Footer ──────────────────────────────────────────────────── */
 .site-footer {
   display: flex;

@@ -23,13 +23,13 @@ const pageOrder: PageId[] = ["overview", "detection", "localization", "mobile", 
 const pageTokens = new Set<PageId>(pageOrder);
 
 const routes: { id: PageId; label: string; subtitle: string }[] = [
-  { id: "overview",     label: "首页",       subtitle: "平台介绍" },
-  { id: "detection",    label: "检测控制台",  subtitle: "流量识别" },
-  { id: "localization", label: "定位工作台",  subtitle: "方向标注" },
-  { id: "mobile",       label: "移动端流程",  subtitle: "四步交互" },
-  { id: "algorithms",   label: "算法链路",    subtitle: "模型详情" },
-  { id: "evaluation",   label: "实验评估",    subtitle: "风险报告" },
-  { id: "repository",   label: "系统设置",    subtitle: "工程边界" },
+  { id: "overview",     label: "首页",      subtitle: "平台介绍" },
+  { id: "detection",    label: "检测控制台", subtitle: "流量识别" },
+  { id: "localization", label: "定位工作台", subtitle: "方向标注" },
+  { id: "mobile",       label: "移动端流程", subtitle: "四步交互" },
+  { id: "algorithms",   label: "算法链路",   subtitle: "模型详情" },
+  { id: "evaluation",   label: "实验评估",   subtitle: "风险报告" },
+  { id: "repository",   label: "系统设置",   subtitle: "工程边界" },
 ];
 
 const data = demoData as unknown as {
@@ -82,8 +82,12 @@ export default function App() {
   const primaryGroup = groups.find((g) => g.mac === detection.candidateMacs[0]) ?? groups[0];
   const primaryVector = primaryGroup ? extractFeatureVector(primaryGroup) : undefined;
   const captureProgress = scenario.captureStatus === "failed" ? 16 : Math.min(100, 22 + stage * 23 + (boostProgress ? 16 : 0));
-  const visibleFrames = stage === 0 ? scenario.frames.slice(0, Math.max(1, Math.ceil((scenario.frames.length * captureProgress) / 100))) : scenario.frames;
-  const bitrate = scenario.id === "reverse-needed" ? primaryGroup?.bitrateSeries ?? [] : data.localization.bitrateSeries;
+  const visibleFrames =
+    stage === 0
+      ? scenario.frames.slice(0, Math.max(1, Math.ceil((scenario.frames.length * captureProgress) / 100)))
+      : scenario.frames;
+  const bitrate =
+    scenario.id === "reverse-needed" ? primaryGroup?.bitrateSeries ?? [] : data.localization.bitrateSeries;
   const effectiveMotionMode = scenario.localizationMode === "outside" ? "outside" : motionMode;
   const localization = estimateLocalization(
     bitrate,
@@ -92,7 +96,8 @@ export default function App() {
     effectiveMotionMode,
   );
   const cusum = detectBitrateChange(bitrate);
-  const preciseVisible = stage >= 3 || (page === "localization" && detection.hasCamera && effectiveMotionMode !== "outside");
+  const preciseVisible =
+    stage >= 3 || (page === "localization" && detection.hasCamera && effectiveMotionMode !== "outside");
 
   function goToPage(next: PageId) {
     setPage(next);
@@ -103,7 +108,9 @@ export default function App() {
     const next = scenarios.find((item) => item.id === id);
     setScenarioId(id);
     setStage(0);
-    setMotionMode(next?.localizationMode === "reverse" ? "reverse" : next?.localizationMode === "outside" ? "outside" : "toward");
+    setMotionMode(
+      next?.localizationMode === "reverse" ? "reverse" : next?.localizationMode === "outside" ? "outside" : "toward",
+    );
   }
 
   function nextStage() {
@@ -115,6 +122,7 @@ export default function App() {
       <div className="particles-bg" />
       <div className="grid-overlay" />
 
+      {/* ── Topbar ── */}
       <header className="topbar">
         <button className="brand-button" onClick={() => goToPage("overview")} aria-label="返回首页">
           <span>CamDetector</span>
@@ -134,16 +142,20 @@ export default function App() {
         </nav>
       </header>
 
-      <HeroSection
-        scenario={scenario}
-        detection={detection}
-        localization={localization}
-        captureProgress={captureProgress}
-        cusumTriggered={cusum.triggered}
-        onStart={() => goToPage("detection")}
-        onLocate={() => goToPage("localization")}
-      />
+      {/* ── Hero only on overview ── */}
+      {page === "overview" && (
+        <HeroSection
+          scenario={scenario}
+          detection={detection}
+          localization={localization}
+          captureProgress={captureProgress}
+          cusumTriggered={cusum.triggered}
+          onStart={() => goToPage("detection")}
+          onLocate={() => goToPage("localization")}
+        />
+      )}
 
+      {/* ── Page content ── */}
       <section className="page-stage">
         {page === "overview" && (
           <OverviewPage
@@ -227,7 +239,11 @@ export default function App() {
           />
         )}
         {page === "evaluation" && (
-          <EvaluationPage evaluationView={evaluationView} setEvaluationView={setEvaluationView} data={data.evaluation} />
+          <EvaluationPage
+            evaluationView={evaluationView}
+            setEvaluationView={setEvaluationView}
+            data={data.evaluation}
+          />
         )}
         {page === "repository" && <RepositoryPage />}
       </section>
@@ -240,7 +256,9 @@ export default function App() {
   );
 }
 
-/* ─── Hero Section ───────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   HERO SECTION  (overview only)
+═══════════════════════════════════════════════════════════════ */
 function HeroSection({
   scenario,
   detection,
@@ -260,7 +278,7 @@ function HeroSection({
 }) {
   return (
     <section className="hero-section">
-      {/* ── Left: copy ── */}
+      {/* Left: copy */}
       <div className="hero-content">
         <p className="eyebrow">802.11 Sensing · SVM Detection · CUSUM Localization</p>
         <h1>CamDetector</h1>
@@ -280,9 +298,8 @@ function HeroSection({
         </div>
       </div>
 
-      {/* ── Right: live board ── */}
+      {/* Right: live board */}
       <div className="hero-board">
-        {/* signal preview + scanning room */}
         <div className="signal-preview">
           <div className="room-scan">
             <span className="scan-grid" />
@@ -297,7 +314,6 @@ function HeroSection({
           </div>
         </div>
 
-        {/* threat radar */}
         <div className="threat-radar">
           <span className="radar-orbit orbit-a" />
           <span className="radar-orbit orbit-b" />
@@ -307,19 +323,50 @@ function HeroSection({
           <small>SVM confidence</small>
         </div>
 
-        {/* metric tiles */}
-        <MetricTile label="当前场景" value={scenario.name} />
-        <MetricTile label="采集进度" value={`${captureProgress}%`} tone="cyan" />
+        <MetricTile label="当前场景"   value={scenario.name} />
+        <MetricTile label="采集进度"   value={`${captureProgress}%`} tone="cyan" />
         <MetricTile label="识别置信度" value={formatPct(detection.confidence)} tone={detection.hasCamera ? "amber" : "green"} />
-        <MetricTile label="候选目标" value={detection.candidateMacs[0] ?? "未发现"} />
-        <MetricTile label="方向角度" value={`${localization.directionDeg.toFixed(0)}°`} />
-        <MetricTile label="CUSUM" value={cusumTriggered ? "已触发" : "等待中"} tone={cusumTriggered ? "amber" : "green"} />
+        <MetricTile label="候选目标"   value={detection.candidateMacs[0] ?? "未发现"} />
+        <MetricTile label="方向角度"   value={`${localization.directionDeg.toFixed(0)}°`} />
+        <MetricTile label="CUSUM"      value={cusumTriggered ? "已触发" : "等待中"} tone={cusumTriggered ? "amber" : "green"} />
       </div>
     </section>
   );
 }
 
-/* ─── Overview Page ──────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   PAGE BANNER  (replaces hero on sub-pages)
+═══════════════════════════════════════════════════════════════ */
+function PageBanner({
+  title,
+  subtitle,
+  kicker,
+  tiles,
+}: {
+  title: string;
+  subtitle: string;
+  kicker: string;
+  tiles: { label: string; value: string; tone?: "default" | "cyan" | "green" | "amber" }[];
+}) {
+  return (
+    <div className="page-banner">
+      <div className="page-banner-copy">
+        <p className="eyebrow">{kicker}</p>
+        <h1 className="page-banner-h1">{title}</h1>
+        <p className="page-banner-sub">{subtitle}</p>
+      </div>
+      <div className="page-banner-tiles">
+        {tiles.map((t) => (
+          <MetricTile key={t.label} label={t.label} value={t.value} tone={t.tone} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OVERVIEW PAGE
+═══════════════════════════════════════════════════════════════ */
 function OverviewPage({
   scenario,
   detection,
@@ -367,7 +414,6 @@ function OverviewPage({
 
   return (
     <div className="page-grid">
-      {/* stat + copy */}
       <section className="product-intro">
         <div className="product-copy">
           <p className="section-kicker">Platform Overview</p>
@@ -387,7 +433,6 @@ function OverviewPage({
         </div>
       </section>
 
-      {/* live status */}
       <section className="overview-highlight">
         <div>
           <p className="section-kicker">System Overview</p>
@@ -403,7 +448,6 @@ function OverviewPage({
         </div>
       </section>
 
-      {/* feature cards */}
       <section className="feature-deck">
         {entries.map((entry, index) => (
           <button className="feature-card" key={entry.title} onClick={entry.action}>
@@ -414,7 +458,6 @@ function OverviewPage({
         ))}
       </section>
 
-      {/* tech stack */}
       <section className="stack-section">
         <div className="stack-title">
           <p className="section-kicker">Technical Architecture</p>
@@ -432,7 +475,6 @@ function OverviewPage({
         </div>
       </section>
 
-      {/* project profile */}
       <section className="project-profile">
         <div className="section-card profile-main">
           <p className="section-kicker">Project Information</p>
@@ -451,7 +493,6 @@ function OverviewPage({
         </div>
       </section>
 
-      {/* workflow strip */}
       <section className="workflow-strip">
         {workflow.map((item, index) => (
           <div className="workflow-node" key={item}>
@@ -461,7 +502,6 @@ function OverviewPage({
         ))}
       </section>
 
-      {/* CTA */}
       <section className="cta-band">
         <div>
           <p className="section-kicker">Online Demo</p>
@@ -477,7 +517,9 @@ function OverviewPage({
   );
 }
 
-/* ─── Detection Page ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   DETECTION PAGE
+═══════════════════════════════════════════════════════════════ */
 function DetectionPage({
   scenario,
   scenarioId,
@@ -517,8 +559,19 @@ function DetectionPage({
 }) {
   return (
     <div className="page-grid">
+      <PageBanner
+        kicker="Traffic Detection · 802.11 Frame Analysis"
+        title="检测控制台"
+        subtitle="切换不同现场场景，数据包表格、特征向量、CDF 图表和手机流程实时联动。"
+        tiles={[
+          { label: "当前阶段",   value: `${stage + 1} / 4` },
+          { label: "采集进度",   value: `${captureProgress}%`, tone: "cyan" },
+          { label: "摄像头数量", value: `${detection.cameraCount}`, tone: detection.hasCamera ? "amber" : "green" },
+          { label: "CUSUM",     value: cusum.triggered ? `t=${cusum.triggerTime}s` : "未触发", tone: cusum.triggered ? "amber" : "default" },
+        ]}
+      />
+
       <section className="section-card">
-        <SectionTitle kicker="Traffic Detection" title="数据采集与摄像头流量识别" text="切换不同现场场景，表格、特征、图表和手机流程会同步变化。" />
         <ScenarioPicker activeId={scenarioId} onSelect={setScenario} />
         <div className="control-row">
           <button className={showInspector ? "chip active" : "chip"} onClick={() => setShowInspector(!showInspector)}>
@@ -531,15 +584,6 @@ function DetectionPage({
           <button className="chip" onClick={onNext}>推进一步</button>
         </div>
       </section>
-
-      {showInspector && (
-        <section className="inspector-strip">
-          <MetricTile label="当前阶段" value={`${stage + 1} / 4`} />
-          <MetricTile label="采集进度" value={`${captureProgress}%`} tone="cyan" />
-          <MetricTile label="摄像头数量" value={`${detection.cameraCount}`} tone={detection.hasCamera ? "amber" : "green"} />
-          <MetricTile label="CUSUM 状态" value={cusum.triggered ? `t=${cusum.triggerTime}s` : "未触发"} tone={cusum.triggered ? "amber" : "default"} />
-        </section>
-      )}
 
       <section className="split-grid">
         <PacketTable frames={visibleFrames} />
@@ -566,7 +610,9 @@ function DetectionPage({
   );
 }
 
-/* ─── Localization Page ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   LOCALIZATION PAGE
+═══════════════════════════════════════════════════════════════ */
 function LocalizationPage({
   scenario,
   stage,
@@ -594,8 +640,19 @@ function LocalizationPage({
 
   return (
     <div className="page-grid">
+      <PageBanner
+        kicker="Localization · CUSUM + Motion Assist"
+        title="定位工作台"
+        subtitle="通过模式按钮模拟正向靠近、反向移动和无摄像头三类状态，实时查看雷达与房间标注。"
+        tiles={[
+          { label: "识别状态", value: detection.hasCamera ? "发现目标" : "未发现", tone: detection.hasCamera ? "amber" : "green" },
+          { label: "方向角度", value: `${localization.directionDeg.toFixed(1)}°` },
+          { label: "距离估计", value: `${localization.distanceMeters || 0} m`, tone: "cyan" },
+          { label: "当前模式", value: modeLabels[motionMode] },
+        ]}
+      />
+
       <section className="section-card">
-        <SectionTitle kicker="Localization" title="方向定位与精准标注" text="通过模式按钮模拟正向靠近、反向移动和当前房间不存在摄像头三类状态。" />
         <div className="control-row">
           {(["toward", "reverse", "outside"] as const).map((mode) => (
             <button key={mode} className={motionMode === mode ? "chip active" : "chip"} onClick={() => setMotionMode(mode)}>
@@ -616,10 +673,10 @@ function LocalizationPage({
         <div className="section-card compact-card">
           <SectionTitle kicker="Decision" title="定位结论" text={localization.instruction} />
           <div className="metric-row">
-            <MetricTile label="现场场景"  value={scenario.name} />
-            <MetricTile label="识别状态"  value={detection.hasCamera ? "发现目标" : "未发现"} tone={detection.hasCamera ? "amber" : "green"} />
-            <MetricTile label="方向角度"  value={`${localization.directionDeg.toFixed(1)}°`} />
-            <MetricTile label="距离估计"  value={`${localization.distanceMeters || 0} m`} tone="cyan" />
+            <MetricTile label="现场场景" value={scenario.name} />
+            <MetricTile label="识别状态" value={detection.hasCamera ? "发现目标" : "未发现"} tone={detection.hasCamera ? "amber" : "green"} />
+            <MetricTile label="方向角度" value={`${localization.directionDeg.toFixed(1)}°`} />
+            <MetricTile label="距离估计" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
           </div>
         </div>
         <MobileFlow
@@ -636,7 +693,9 @@ function LocalizationPage({
   );
 }
 
-/* ─── Mobile Page ────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE PAGE
+═══════════════════════════════════════════════════════════════ */
 function MobilePage({
   scenario,
   scenarioId,
@@ -680,10 +739,22 @@ function MobilePage({
 }) {
   return (
     <div className="page-grid">
+      <PageBanner
+        kicker="Mobile Flow · 4-Step Detection"
+        title="移动端流程"
+        subtitle="适合录屏展示：右侧控制台切换场景与阶段，左侧手机画面实时联动。"
+        tiles={[
+          { label: "当前阶段",  value: `Step ${stage + 1}` },
+          { label: "采集进度",  value: `${captureProgress}%`, tone: "cyan" },
+          { label: "CUSUM",    value: cusum.triggered ? "已触发" : "等待", tone: cusum.triggered ? "amber" : "default" },
+          { label: "置信度",   value: formatPct(detection.confidence), tone: detection.hasCamera ? "amber" : "green" },
+        ]}
+      />
+
       <section className="section-card">
-        <SectionTitle kicker="Mobile Flow" title="手机四步流程" text="适合录屏展示，右侧控制区可以切换场景、阶段和定位方向。" />
         <ScenarioPicker activeId={scenarioId} onSelect={setScenario} compact />
       </section>
+
       <section className="mobile-layout">
         <MobileFlow
           stage={stage}
@@ -704,8 +775,8 @@ function MobilePage({
             <button className="chip" onClick={() => setStage(3)}>标注页</button>
             <button className={motionMode === "toward"  ? "chip active" : "chip"} onClick={() => setMotionMode("toward")}>正向</button>
             <button className={motionMode === "reverse" ? "chip active" : "chip"} onClick={() => setMotionMode("reverse")}>反向</button>
-            <button className={boostProgress ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>采集增强</button>
-            <button className={showInspector ? "chip active" : "chip"} onClick={() => setShowInspector(!showInspector)}>算法详情</button>
+            <button className={boostProgress  ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>采集增强</button>
+            <button className={showInspector  ? "chip active" : "chip"} onClick={() => setShowInspector(!showInspector)}>算法详情</button>
           </div>
           <div className="metric-row">
             <MetricTile label="CUSUM"  value={cusum.triggered ? "已触发" : "等待"} tone={cusum.triggered ? "amber" : "default"} />
@@ -718,7 +789,9 @@ function MobilePage({
   );
 }
 
-/* ─── Algorithms Page ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   ALGORITHMS PAGE
+═══════════════════════════════════════════════════════════════ */
 function AlgorithmsPage({
   scenario,
   groupsCount,
@@ -740,17 +813,28 @@ function AlgorithmsPage({
 }) {
   const pipelineSteps = [
     { id: "01", label: "802.11 帧解析", desc: "Libpcap 抓包 + 字段拆解" },
-    { id: "02", label: "MAC 聚合",       desc: "按来源分组，过滤广播" },
-    { id: "03", label: "L/d/b/s 特征",  desc: "包长 & 比特率四维向量" },
-    { id: "04", label: "SVM 判别",       desc: "置信度阈值 ≥ 0.62" },
-    { id: "05", label: "CUSUM 趋势",    desc: "drift=12, threshold=110" },
-    { id: "06", label: "方向 & 距离",   desc: "信号强度 + 移动路径" },
+    { id: "02", label: "MAC 聚合",      desc: "按来源分组，过滤广播" },
+    { id: "03", label: "L/d/b/s 特征", desc: "包长 & 比特率四维向量" },
+    { id: "04", label: "SVM 判别",      desc: "置信度阈值 ≥ 0.62" },
+    { id: "05", label: "CUSUM 趋势",   desc: "drift=12, threshold=110" },
+    { id: "06", label: "方向 & 距离",  desc: "信号强度 + 移动路径" },
   ];
 
   return (
     <div className="page-grid">
+      <PageBanner
+        kicker="Algorithm Pipeline · End-to-End"
+        title="算法链路"
+        subtitle="每个模块对应一次数据处理阶段，便于在答辩时按顺序讲解完整的检测与定位流程。"
+        tiles={[
+          { label: "场景",     value: scenario.name },
+          { label: "候选分组", value: `${groupsCount}` },
+          { label: "摄像头数量", value: `${detection.cameraCount}`, tone: detection.hasCamera ? "amber" : "green" },
+          { label: "定位距离", value: `${localization.distanceMeters || 0} m`, tone: "cyan" },
+        ]}
+      />
+
       <section className="section-card">
-        <SectionTitle kicker="Algorithm Pipeline" title="算法链路" text="每个模块对应一次数据处理阶段，便于在答辩时按顺序讲解。" />
         <div className="pipeline">
           {pipelineSteps.map((step) => (
             <div className="pipeline-node" key={step.id}>
@@ -760,13 +844,6 @@ function AlgorithmsPage({
             </div>
           ))}
         </div>
-      </section>
-
-      <section className="inspector-strip">
-        <MetricTile label="场景"     value={scenario.name} />
-        <MetricTile label="候选分组" value={`${groupsCount}`} />
-        <MetricTile label="摄像头数量" value={`${detection.cameraCount}`} tone={detection.hasCamera ? "amber" : "green"} />
-        <MetricTile label="定位距离" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
       </section>
 
       <section className="split-grid">
@@ -792,7 +869,9 @@ function AlgorithmsPage({
   );
 }
 
-/* ─── Evaluation Page ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   EVALUATION PAGE
+═══════════════════════════════════════════════════════════════ */
 function EvaluationPage({
   evaluationView,
   setEvaluationView,
@@ -827,16 +906,30 @@ function EvaluationPage({
             tnr: Math.min(99.2, item.tpr * 100 - 0.4),
           }));
 
+  const bestTpr = Math.max(...matrixRows.map((r) => r.tpr));
+
   return (
     <div className="page-grid">
+      <PageBanner
+        kicker="Evaluation · TPR / TNR Metrics"
+        title="实验评估"
+        subtitle="切换指标后，图表和 TPR/TNR 表格会同步更新，展示识别链路在不同条件下的稳定性。"
+        tiles={[
+          { label: "最高 TPR", value: `${bestTpr.toFixed(1)}%`, tone: "cyan" },
+          { label: "当前视图", value: evaluationView === "sample" ? "样本数量" : evaluationView === "duration" ? "动作时长" : "品牌表现" },
+          { label: "数据条数", value: `${matrixRows.length}` },
+          { label: "评估模式", value: "离线合成" },
+        ]}
+      />
+
       <section className="section-card">
-        <SectionTitle kicker="Evaluation" title="实验评估面板" text="切换指标后，图表和 TPR/TNR 表格会同步更新。" />
         <div className="control-row">
           <button className={evaluationView === "sample"   ? "chip active" : "chip"} onClick={() => setEvaluationView("sample")}>样本数量</button>
           <button className={evaluationView === "duration" ? "chip active" : "chip"} onClick={() => setEvaluationView("duration")}>动作时长</button>
           <button className={evaluationView === "brand"    ? "chip active" : "chip"} onClick={() => setEvaluationView("brand")}>品牌表现</button>
         </div>
       </section>
+
       <section className="split-grid">
         <MetricBars title={chartTitle} items={chartItems} />
         <div className="section-card compact-card">
@@ -857,7 +950,9 @@ function EvaluationPage({
   );
 }
 
-/* ─── Repository Page ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   REPOSITORY PAGE
+═══════════════════════════════════════════════════════════════ */
 function RepositoryPage() {
   const repoBlocks = [
     ["frontend/",   "比赛展示网站、分页面板和手机流程"],
@@ -866,7 +961,6 @@ function RepositoryPage() {
     ["docs/",       "系统架构、算法说明、流程和边界说明"],
     ["tests/",      "算法链路 smoke test"],
   ];
-
   const safeItems = [
     "不执行真实 Wi-Fi 抓包",
     "不提供破解命令",
@@ -878,6 +972,18 @@ function RepositoryPage() {
 
   return (
     <div className="page-grid">
+      <PageBanner
+        kicker="Repository · Project Structure"
+        title="系统设置"
+        subtitle="仓库按展示网站、算法模块、样本数据、文档和测试分层，所有展示均在安全边界内运行。"
+        tiles={[
+          { label: "前端框架",   value: "Vite + React" },
+          { label: "算法模块数", value: "5", tone: "cyan" },
+          { label: "演示场景数", value: "4" },
+          { label: "真实抓包",   value: "无", tone: "green" },
+        ]}
+      />
+
       <section className="section-card">
         <SectionTitle kicker="Repository" title="工程结构" text="仓库按展示网站、算法模块、样本数据、文档和测试分层。" />
         <div className="repo-grid">
@@ -889,6 +995,7 @@ function RepositoryPage() {
           ))}
         </div>
       </section>
+
       <section className="safe-grid">
         {safeItems.map((item) => (
           <div className="safe-item" key={item}>{item}</div>
@@ -898,7 +1005,9 @@ function RepositoryPage() {
   );
 }
 
-/* ─── Shared components ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════════════════════════════ */
 function ScenarioPicker({ activeId, onSelect, compact = false }: { activeId: string; onSelect: (id: string) => void; compact?: boolean }) {
   return (
     <div className={compact ? "scenario-picker compact" : "scenario-picker"}>

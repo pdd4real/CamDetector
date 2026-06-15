@@ -90,10 +90,10 @@ function Grid() {
   return (
     <>
       {[30, 70, 110].map((y) => (
-        <line key={y} x1="18" x2="286" y1={y} y2={y} stroke="#d7dee8" strokeWidth="1" />
+        <line key={y} x1="18" x2="286" y1={y} y2={y} stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
       ))}
       {[70, 130, 190, 250].map((x) => (
-        <line key={x} x1={x} x2={x} y1="18" y2="124" stroke="#eef2f6" strokeWidth="1" />
+        <line key={x} x1={x} x2={x} y1="18" y2="124" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
       ))}
     </>
   );
