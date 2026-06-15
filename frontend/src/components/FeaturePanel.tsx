@@ -2,17 +2,17 @@ import { CdfChart } from "./Charts";
 import type { DetectionResult, FeatureVector, TrafficGroup } from "../types";
 
 const T = {
-  title: "\u6d41\u91cf\u8bc6\u522b",
-  model: "SVM \u5206\u7c7b\u5668",
-  detected: "\u68c0\u6d4b\u5230\u6444\u50cf\u5934\u7279\u5f81",
-  notDetected: "\u672a\u68c0\u6d4b\u5230\u6444\u50cf\u5934",
-  confidence: "\u7f6e\u4fe1\u5ea6",
-  noCandidate: "\u5f53\u524d\u6570\u636e\u5305\u672a\u51fa\u73b0\u5019\u9009 MAC",
-  waitingCdf: "\u7b49\u5f85\u751f\u6210 CDF \u66f2\u7ebf",
-  lengthMean: "\u5305\u957f\u5747\u503c",
-  dispersion: "\u79bb\u6563\u5ea6",
-  burst: "\u7a81\u53d1\u5ea6",
-  smoothness: "\u5e73\u6ed1\u5ea6",
+  title: "流量识别",
+  model: "SVM 分类器",
+  detected: "检测到摄像头特征",
+  notDetected: "未检测到摄像头",
+  confidence: "置信度",
+  noCandidate: "当前数据包未出现候选 MAC",
+  waitingCdf: "等待生成 CDF 曲线",
+  lengthMean: "包长均值",
+  dispersion: "离散度",
+  burst: "突发度",
+  smoothness: "平滑度",
 };
 
 export function FeaturePanel({

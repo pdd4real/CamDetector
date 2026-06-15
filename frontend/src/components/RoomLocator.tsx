@@ -1,11 +1,11 @@
 import type { LocalizationState } from "../types";
 
 const T = {
-  title: "\u7cbe\u51c6\u5b9a\u4f4d",
-  overlay: "\u623f\u95f4\u6807\u6ce8",
-  signal: "\u4fe1\u53f7\u5f3a\u5ea6",
-  distance: "\u8ddd\u79bb",
-  meter: "\u7c73",
+  title: "精准定位",
+  overlay: "房间标注",
+  signal: "信号强度",
+  distance: "距离",
+  meter: "米",
 };
 
 const roomImage = `${import.meta.env.BASE_URL}assets/demo-room.png`;

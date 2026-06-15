@@ -1,8 +1,8 @@
 import type { PacketFrame } from "../types";
 
 const T = {
-  title: "802.11 \u6570\u636e\u5305\u89e3\u6790",
-  waiting: "\u7b49\u5f85\u91c7\u96c6\u6570\u636e\u5305",
+  title: "802.11 数据包解析",
+  waiting: "等待采集数据包",
 };
 
 export function PacketTable({ frames }: { frames: PacketFrame[] }) {

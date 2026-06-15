@@ -2,9 +2,9 @@ import { BitrateChart } from "./Charts";
 import type { BitratePoint, LocalizationState } from "../types";
 
 const T = {
-  title: "\u65b9\u5411\u5b9a\u4f4d",
-  direction: "\u65b9\u5411",
-  signal: "\u4fe1\u53f7\u5f3a\u5ea6",
+  title: "方向定位",
+  direction: "方向",
+  signal: "信号强度",
 };
 
 export function RadarPanel({ state, bitrate }: { state: LocalizationState; bitrate: BitratePoint[] }) {

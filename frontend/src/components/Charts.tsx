@@ -1,9 +1,9 @@
 import type { BitratePoint, CdfPoint } from "../types";
 
 const T = {
-  cdfTitle: "\u0043\u0044\u0046 \u5305\u957f\u5206\u5e03",
-  bitrateTitle: "\u6bd4\u7279\u7387\u53d8\u5316",
-  item: "\u9879",
+  cdfTitle: "CDF 包长分布",
+  bitrateTitle: "比特率变化",
+  item: "项",
 };
 
 type SeriesPoint = { x: number; y: number };

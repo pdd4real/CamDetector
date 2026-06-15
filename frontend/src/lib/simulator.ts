@@ -11,9 +11,9 @@ import type {
 const WINDOW_SECONDS = 5;
 
 const T = {
-  outside: "\u5f53\u524d\u623f\u95f4\u4e0d\u5b58\u5728\u6444\u50cf\u5934\uff0c\u53ef\u5207\u6362\u623f\u95f4\u7ee7\u7eed\u91c7\u96c6",
-  reverse: "\u8bf7\u5f80\u53cd\u65b9\u5411\u79fb\u52a8\uff0c\u76f4\u5230\u51fa\u73b0\u65b0\u7684\u63d0\u793a",
-  toward: "\u8bf7\u7f13\u6162\u79fb\u52a8\u624b\u673a\uff0c\u6cbf\u7bad\u5934\u65b9\u5411\u9760\u8fd1\u7591\u4f3c\u4f4d\u7f6e",
+  outside: "当前房间不存在摄像头，可切换房间继续采集",
+  reverse: "请往反方向移动，直到出现新的提示",
+  toward: "请缓慢移动手机，沿箭头方向靠近疑似位置",
 };
 
 export function groupTraffic(frames: PacketFrame[], vendors: Record<string, string>): TrafficGroup[] {
