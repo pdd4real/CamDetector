@@ -27,6 +27,8 @@ const T = {
   ok: "\u2713",
 };
 
+const roomImage = `${import.meta.env.BASE_URL}assets/demo-room.png`;
+
 export function MobileFlow({
   stage,
   captureProgress,
@@ -118,7 +120,7 @@ function renderStage(
       <h3>{T.precise}</h3>
       <p>{preciseVisible ? T.preciseDone : T.preciseRunning}</p>
       <div className="mini-room">
-        <img src="/assets/demo-room.png" alt="" />
+        <img src={roomImage} alt="" />
         {preciseVisible ? <i /> : null}
       </div>
       <div className="mini-stats">
@@ -132,4 +134,3 @@ function renderStage(
     </div>
   );
 }
-

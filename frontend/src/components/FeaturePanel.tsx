@@ -3,6 +3,7 @@ import type { DetectionResult, FeatureVector, TrafficGroup } from "../types";
 
 const T = {
   title: "\u6d41\u91cf\u8bc6\u522b",
+  model: "SVM \u5206\u7c7b\u5668",
   detected: "\u68c0\u6d4b\u5230\u6444\u50cf\u5934\u7279\u5f81",
   notDetected: "\u672a\u68c0\u6d4b\u5230\u6444\u50cf\u5934",
   confidence: "\u7f6e\u4fe1\u5ea6",
@@ -36,7 +37,7 @@ export function FeaturePanel({
     <div className="panel">
       <div className="panel-title">
         <span>{T.title}</span>
-        <small>SVM surrogate</small>
+        <small>{T.model}</small>
       </div>
       <div className={`result-card ${result.hasCamera ? "warn" : "ok"}`}>
         <strong>{result.hasCamera ? T.detected : T.notDetected}</strong>
@@ -59,4 +60,3 @@ export function FeaturePanel({
     </div>
   );
 }
-
