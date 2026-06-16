@@ -384,133 +384,148 @@ function OverviewPage({
   onOpenAlgorithms: () => void;
   onOpenEvaluation: () => void;
 }) {
-  const profile = [
-    ["项目定位", "面向隐蔽无线摄像头的发现、识别与定位展示系统"],
-    ["识别对象", "持续上传视频流、包长分布稳定、比特率随距离变化的无线设备"],
-    ["技术路线", "802.11 帧解析 → L/d/b/s 特征提取 → SVM 分类 → CUSUM 趋势检测 → 移动辅助定位"],
-    ["展示边界", "使用合成样本数据，不调用真实抓包、破解或硬件接口"],
-  ];
-  const workflow = ["采集无线帧", "MAC 聚合流量", "提取 L/d/b/s 特征", "SVM 判别目标", "移动估计方向", "房间红框标注"];
   const stats = [
-    ["99.5%", "模拟 TPR", "摄像头流量识别真阳性率"],
-    ["99.0%", "模拟 TNR", "非摄像头场景排除能力"],
-    ["4",     "演示脚本", "覆盖发现、未发现、失败和反向移动"],
-    ["0",     "真实抓包", "不包含攻击命令或硬件调用"],
+    ["99.5%", "TPR", "摄像头流量真阳性率"],
+    ["99.0%", "TNR", "非摄像头排除能力"],
+    ["4D",    "特征向量", "PLD · 带宽 · 稳定性 · 硬件"],
+    ["0",     "真实抓包", "全部合成样本演示"],
   ];
-  const stack = [
-    ["前端平台", "Vite + React + TypeScript，适配 GitHub Pages 静态部署。"],
-    ["算法核心", "Packet Parser、Feature Extractor、SVM Classifier、CUSUM Detector、Locator。"],
-    ["数据资产", "合成 802.11 帧、MAC 厂商信息、比特率序列、定位路径和评估曲线。"],
-    ["展示模块", "检测控制台、定位工作台、移动端流程、风险报告、高级工具和系统设置。"],
-  ];
-  const entries = [
-    { title: "采集与解析", text: "模拟周围 802.11 数据帧，展示时间戳、MAC、帧类型、包长和信号强度。", action: onOpenDetection },
-    { title: "流量识别",   text: "提取包长分布、突发度和平滑度，输出摄像头候选目标与置信度。",       action: onOpenDetection },
-    { title: "方向定位",   text: "结合比特率趋势、移动方向和信号强度，给出继续前进或反方向移动提示。", action: onOpenLocalization },
-    { title: "精准标注",   text: "在房间图像中展示箭头、距离估计和疑似摄像头红框位置。",             action: onOpenLocalization },
-    { title: "算法链路",   text: "完整呈现 Packet Parser、Feature Extractor、SVM、CUSUM 和 Locator。", action: onOpenAlgorithms },
-    { title: "实验评估",   text: "展示样本数量、动作持续时间和品牌样本表现等指标。",                  action: onOpenEvaluation },
+
+  const modules = [
+    {
+      num: "01",
+      tag: "Module 1 · 数据感知",
+      title: "环境数据感知",
+      subtitle: "流量捕获与特征提取",
+      desc: "系统开启无线网卡监听模式，实时捕获 802.11 数据帧，过滤冗余包后提取基于 MAC 头部的四维特征向量：分组长度分布（PLD）、带宽稳定性、PLD 稳定性与硬件特征。",
+      pills: ["802.11 帧解析", "MAC 聚合", "PLD 特征", "四维向量"],
+      action: onOpenDetection,
+      tone: "cyan" as const,
+    },
+    {
+      num: "02",
+      tag: "Module 2 · 存在性检测",
+      title: "隐蔽摄像头检测",
+      subtitle: "SVM 分类识别",
+      desc: "将四维特征向量输入支持向量机（SVM）分类器进行模型匹配，不仅判断是否存在摄像头，还能在拥挤网络环境下同时识别出多个隐蔽摄像头并给出置信度。",
+      pills: ["SVM 分类器", "置信度输出", "多目标识别", "候选 MAC"],
+      action: onOpenDetection,
+      tone: "amber" as const,
+    },
+    {
+      num: "03",
+      tag: "Module 3 · 粗略定位",
+      title: "动态雷达定位",
+      subtitle: "CUSUM 比特率分析",
+      desc: "人体移动引发摄像头画面变化，进而引起比特率骤变。系统使用 CUSUM 算法量化这一波动，引导用户从房间一角走向另一角，判断用户相对摄像头的运动方向。",
+      pills: ["CUSUM 算法", "比特率波形", "运动引导", "方向判断"],
+      action: onOpenLocalization,
+      tone: "cyan" as const,
+    },
+    {
+      num: "04",
+      tag: "Module 4 · 精确定位",
+      title: "精准方位探测",
+      subtitle: "FFT + 指数回归可视定位",
+      desc: "对比特率序列进行快速傅里叶变换和指数回归，计算用户与摄像头的相对距离与方向角。随后提示用户打开手机摄像头对准目标，叠加显示信号强度与距离标注。",
+      pills: ["FFT 变换", "指数回归", "距离 & 角度", "摄像头取景框"],
+      action: onOpenLocalization,
+      tone: "amber" as const,
+    },
   ];
 
   return (
     <div className="page-grid">
-      <section className="product-intro">
-        <div className="product-copy">
-          <p className="section-kicker">Platform Overview</p>
-          <h2>新一代无线摄像头<br />安全感知演示平台</h2>
-          <p>
-            参考完整安全平台的展示方式，CamDetector 将产品介绍、演示控制台、风险报告、高级工具与系统边界整合在一个仓库中，让评委先理解项目价值，再进入具体交互流程。
-          </p>
-        </div>
-        <div className="stat-wall">
-          {stats.map(([value, label, text]) => (
-            <div className="stat-card" key={label}>
-              <strong>{value}</strong>
-              <span>{label}</span>
-              <p>{text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="overview-highlight">
-        <div>
-          <p className="section-kicker">System Overview</p>
-          <h2>从无线流量到房间标注的一体化流程</h2>
-          <p>
-            当前场景为"{scenario.name}"，系统置信度 {formatPct(detection.confidence)}，方向角度 {localization.directionDeg.toFixed(0)}°。
-          </p>
-        </div>
-        <div className="status-mosaic">
-          <MetricTile label="目标数量"  value={`${detection.cameraCount}`} tone={detection.hasCamera ? "amber" : "green"} />
-          <MetricTile label="候选 MAC" value={detection.candidateMacs[0] ?? "无"} />
-          <MetricTile label="距离估计" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
-        </div>
-      </section>
-
-      <section className="feature-deck">
-        {entries.map((entry, index) => (
-          <button className="feature-card" key={entry.title} onClick={entry.action}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{entry.title}</strong>
-            <p>{entry.text}</p>
-          </button>
-        ))}
-      </section>
-
-      <section className="stack-section">
-        <div className="stack-title">
-          <p className="section-kicker">Technical Architecture</p>
-          <h2>系统架构</h2>
-          <p>从合成流量到可视化定位，每一层都对应仓库中的代码和文档模块，便于答辩时按工程结构展开说明。</p>
-        </div>
-        <div className="stack-grid">
-          {stack.map(([title, text], index) => (
-            <div className="stack-card" key={title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{title}</strong>
-              <p>{text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="project-profile">
-        <div className="section-card profile-main">
-          <p className="section-kicker">Project Information</p>
-          <h2>作品信息</h2>
-          <p>
-            CamDetector 将无线流量特征识别、移动趋势判断和房间画面标注整合到一个可讲解的网页系统。页面只展示作品能力与技术边界，不包含任何个人信息。
-          </p>
-        </div>
-        <div className="profile-grid">
-          {profile.map(([label, text]) => (
-            <div className="profile-item" key={label}>
-              <span>{label}</span>
-              <strong>{text}</strong>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="workflow-strip">
-        {workflow.map((item, index) => (
-          <div className="workflow-node" key={item}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{item}</strong>
+      {/* Stats strip */}
+      <section className="overview-stats-strip">
+        {stats.map(([val, label, sub]) => (
+          <div className="ov-stat" key={label}>
+            <strong>{val}</strong>
+            <span>{label}</span>
+            <p>{sub}</p>
           </div>
         ))}
       </section>
 
+      {/* System tagline */}
+      <section className="overview-tagline section-card">
+        <div className="ov-tag-copy">
+          <p className="section-kicker">System · CamDetector</p>
+          <h2>基于 Wi-Fi 流量大数据分析的<br />隐蔽摄像头感知与定位系统</h2>
+          <p>
+            无需外接专业设备，仅凭智能手机分析加密 Wi-Fi 流量特征及人体移动引发的流量波动，即可实现摄像头的存在性检测与精确定位。
+            当前场景：<em>{scenario.name}</em>，识别置信度 {formatPct(detection.confidence)}。
+          </p>
+        </div>
+        <div className="ov-tag-live">
+          <div className="live-radar-mini">
+            <span className="radar-orbit orbit-a" />
+            <span className="radar-orbit orbit-b" />
+            <span className="radar-beam" style={{ transform: `rotate(${localization.directionDeg}deg)` }} />
+            <span className="radar-center" />
+          </div>
+          <div className="live-metrics">
+            <MetricTile label="识别结果"  value={detection.hasCamera ? `发现 ${detection.cameraCount} 台` : "未发现目标"} tone={detection.hasCamera ? "amber" : "green"} />
+            <MetricTile label="方向角度"  value={`${localization.directionDeg.toFixed(0)}°`} tone="cyan" />
+            <MetricTile label="距离估计"  value={`${localization.distanceMeters || 0} m`} />
+            <MetricTile label="置信度"    value={formatPct(detection.confidence)} tone={detection.hasCamera ? "amber" : "green"} />
+          </div>
+        </div>
+      </section>
+
+      {/* 4 Core modules */}
+      <section className="module-deck">
+        {modules.map((mod) => (
+          <button className={`module-card tone-${mod.tone}`} key={mod.num} onClick={mod.action}>
+            <div className="mod-header">
+              <span className="mod-num">{mod.num}</span>
+              <small className="mod-tag">{mod.tag}</small>
+            </div>
+            <strong className="mod-title">{mod.title}</strong>
+            <span className="mod-sub">{mod.subtitle}</span>
+            <p className="mod-desc">{mod.desc}</p>
+            <div className="mod-pills">
+              {mod.pills.map((pill) => (
+                <span key={pill} className="mod-pill">{pill}</span>
+              ))}
+            </div>
+            <span className="mod-cta">进入演示 →</span>
+          </button>
+        ))}
+      </section>
+
+      {/* Pipeline flow */}
+      <section className="section-card">
+        <SectionTitle kicker="Technical Pipeline" title="完整检测流程" text="从无线帧采集到房间可视标注，六个处理阶段串联成完整的摄像头探测链路。" />
+        <div className="pipeline">
+          {[
+            { id: "01", label: "802.11 帧采集", desc: "监听模式抓包" },
+            { id: "02", label: "MAC 聚合过滤",  desc: "按来源分组" },
+            { id: "03", label: "四维特征提取",  desc: "PLD / 带宽 / 稳定性 / 硬件" },
+            { id: "04", label: "SVM 分类判别",  desc: "置信度 ≥ 0.62" },
+            { id: "05", label: "CUSUM 趋势检测", desc: "drift=12, threshold=110" },
+            { id: "06", label: "FFT 距离定位",   desc: "角度 & 取景框标注" },
+          ].map((step) => (
+            <div className="pipeline-node" key={step.id}>
+              <span>{step.id}</span>
+              <strong>{step.label}</strong>
+              <small style={{ color: "var(--text-dim)", fontSize: "11px" }}>{step.desc}</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
       <section className="cta-band">
         <div>
-          <p className="section-kicker">Online Demo</p>
-          <h2>直接进入可交互演示</h2>
-          <span>无需后端服务，所有模块均从仓库内合成数据读取，适合 GitHub Pages、PPT 嵌入和现场录屏。</span>
+          <p className="section-kicker">Interactive Demo</p>
+          <h2>进入四大功能模块演示</h2>
+          <span>所有数据均为合成样本，适合答辩现场、PPT 嵌入和 GitHub Pages 在线展示。</span>
         </div>
         <div className="hero-actions">
-          <button className="primary-action" onClick={onOpenDetection}>打开检测控制台</button>
-          <button className="ghost-action dark" onClick={onOpenEvaluation}>查看实验评估</button>
+          <button className="primary-action" onClick={onOpenDetection}>模块 1 & 2 — 感知与检测</button>
+          <button className="ghost-action" onClick={onOpenLocalization}>模块 3 & 4 — 定位与标注</button>
+          <button className="ghost-action dark" onClick={onOpenEvaluation}>实验评估报告</button>
         </div>
       </section>
     </div>
@@ -518,7 +533,7 @@ function OverviewPage({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DETECTION PAGE
+   DETECTION PAGE  (Module 1 + Module 2)
 ═══════════════════════════════════════════════════════════════ */
 function DetectionPage({
   scenario,
@@ -557,53 +572,167 @@ function DetectionPage({
   cusum: ReturnType<typeof detectBitrateChange>;
   onNext: () => void;
 }) {
+  const featureItems = primaryVector
+    ? [
+        { label: "L — 平均包长", value: `${primaryVector.L.toFixed(0)} B` },
+        { label: "d — 分布分散度", value: primaryVector.d.toFixed(3) },
+        { label: "b — 突发度", value: primaryVector.b.toFixed(3) },
+        { label: "s — 平滑度", value: primaryVector.s.toFixed(3) },
+      ]
+    : [];
+
   return (
     <div className="page-grid">
       <PageBanner
-        kicker="Traffic Detection · 802.11 Frame Analysis"
-        title="检测控制台"
-        subtitle="切换不同现场场景，数据包表格、特征向量、CDF 图表和手机流程实时联动。"
+        kicker="Module 1 & 2 · 环境感知 → 存在性检测"
+        title="数据感知 & 摄像头检测"
+        subtitle="模拟 Wi-Fi 流量捕获、四维特征提取，再由 SVM 分类器输出摄像头存在性结论。"
         tiles={[
-          { label: "当前阶段",   value: `${stage + 1} / 4` },
           { label: "采集进度",   value: `${captureProgress}%`, tone: "cyan" },
           { label: "摄像头数量", value: `${detection.cameraCount}`, tone: detection.hasCamera ? "amber" : "green" },
-          { label: "CUSUM",     value: cusum.triggered ? `t=${cusum.triggerTime}s` : "未触发", tone: cusum.triggered ? "amber" : "default" },
+          { label: "置信度",    value: formatPct(detection.confidence), tone: detection.hasCamera ? "amber" : "green" },
+          { label: "CUSUM",    value: cusum.triggered ? `t=${cusum.triggerTime}s` : "等待中", tone: cusum.triggered ? "amber" : "default" },
         ]}
       />
 
-      <section className="section-card">
-        <ScenarioPicker activeId={scenarioId} onSelect={setScenario} />
-        <div className="control-row">
-          <button className={showInspector ? "chip active" : "chip"} onClick={() => setShowInspector(!showInspector)}>
-            {showInspector ? "隐藏详情面板" : "显示详情面板"}
+      {/* ── Module 1: 数据感知 ── */}
+      <section className="module-section">
+        <div className="module-label">
+          <span className="mod-num-sm">01</span>
+          <div>
+            <strong>环境数据感知模块</strong>
+            <small>流量捕获与四维特征提取</small>
+          </div>
+        </div>
+
+        <div className="capture-row">
+          {/* Left: animated capture UI */}
+          <div className="capture-panel section-card">
+            <SectionTitle kicker="Live Capture" title="正在收集周围网络数据" text="已过滤下载型冗余包，仅提取 802.11 数据帧 MAC 头部信息。" />
+            <ScenarioPicker activeId={scenarioId} onSelect={setScenario} />
+            <div className="control-row">
+              <button className={boostProgress ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>
+                {boostProgress ? "关闭采集增强" : "开启采集增强"}
+              </button>
+              <button className="chip" onClick={() => setStage(0)}>重置采集</button>
+              <button className="chip" onClick={onNext}>推进阶段</button>
+            </div>
+
+            {/* Capture progress widget */}
+            <div className="capture-progress-widget">
+              <div className="capture-ring" style={{ background: `conic-gradient(var(--neon-cyan) ${captureProgress}%, rgba(255,255,255,0.07) 0)` }}>
+                <div className="capture-ring-inner">
+                  <strong>{captureProgress}%</strong>
+                  <span>{scenario.captureStatus === "failed" ? "采集失败" : captureProgress < 100 ? "采集中…" : "采集完成"}</span>
+                </div>
+              </div>
+              <div className="capture-info">
+                <div className="cap-info-item">
+                  <small>已捕获帧数</small>
+                  <strong>{visibleFrames.length}</strong>
+                </div>
+                <div className="cap-info-item">
+                  <small>当前场景</small>
+                  <strong>{scenario.name}</strong>
+                </div>
+                <div className="cap-info-item">
+                  <small>候选 MAC</small>
+                  <strong>{detection.candidateMacs[0] ?? "--"}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: packet table */}
+          <div className="packet-panel">
+            <PacketTable frames={visibleFrames} />
+          </div>
+        </div>
+
+        {/* Feature extraction */}
+        <div className="feature-row">
+          <div className="section-card feature-extract-card">
+            <SectionTitle kicker="Feature Extraction" title="四维特征向量" text="提取 PLD 特征、带宽稳定性、PLD 稳定性、硬件特征，构成 SVM 输入向量。" />
+            <div className="feature-vector-grid">
+              {featureItems.length > 0 ? featureItems.map((item) => (
+                <div className="fv-item" key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </div>
+              )) : (
+                <p style={{ color: "var(--text-dim)", margin: 0 }}>等待特征计算完成…</p>
+              )}
+            </div>
+          </div>
+          <div className="compact-card section-card">
+            <SectionTitle kicker="Distribution" title="包长 CDF 分布" text="CDF 曲线形态是判断摄像头流量的核心依据。" />
+            <CdfChart data={primaryGroup?.cdf ?? []} />
+          </div>
+          {showInspector && (
+            <div className="compact-card section-card">
+              <FeaturePanel group={primaryGroup} vector={primaryVector} result={detection} />
+            </div>
+          )}
+          <button
+            className={showInspector ? "chip active" : "chip"}
+            style={{ alignSelf: "start", marginTop: 4 }}
+            onClick={() => setShowInspector(!showInspector)}
+          >
+            {showInspector ? "隐藏特征详情" : "展开特征详情"}
           </button>
-          <button className={boostProgress ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>
-            {boostProgress ? "关闭采集增强" : "开启采集增强"}
-          </button>
-          <button className="chip" onClick={() => setStage(0)}>回到采集</button>
-          <button className="chip" onClick={onNext}>推进一步</button>
         </div>
       </section>
 
-      <section className="split-grid">
-        <PacketTable frames={visibleFrames} />
-        <FeaturePanel group={primaryGroup} vector={primaryVector} result={detection} />
-      </section>
+      {/* ── Module 2: SVM 检测 ── */}
+      <section className="module-section">
+        <div className="module-label">
+          <span className="mod-num-sm">02</span>
+          <div>
+            <strong>隐蔽摄像头存在性检测模块</strong>
+            <small>SVM 分类识别 · 多目标发现</small>
+          </div>
+        </div>
 
-      <section className="split-grid">
-        <MobileFlow
-          stage={stage}
-          captureProgress={captureProgress}
-          captureFailed={scenario.captureStatus === "failed"}
-          result={detection}
-          localization={localization}
-          preciseVisible={scenario.id !== "capture-failed"}
-          onNext={onNext}
-        />
-        <div className="section-card compact-card">
-          <SectionTitle kicker="Distribution" title="包长 CDF 与比特率" text="图表随候选 MAC 和场景切换刷新。" />
-          <CdfChart data={primaryGroup?.cdf ?? []} />
-          <BitrateChart data={primaryGroup?.bitrateSeries ?? []} />
+        <div className={`detection-result-panel ${detection.hasCamera ? "state-warn" : "state-safe"}`}>
+          <div className="det-result-icon">
+            {detection.hasCamera ? "⚠" : "✓"}
+          </div>
+          <div className="det-result-body">
+            <strong className="det-result-title">
+              {detection.hasCamera
+                ? `当前房间内存在 ${detection.cameraCount} 台隐蔽摄像头`
+                : "未检测到摄像头特征"}
+            </strong>
+            <p className="det-result-sub">
+              {detection.hasCamera
+                ? `SVM 分类器在流量中发现摄像头特征，置信度 ${formatPct(detection.confidence)}，候选设备 MAC：${detection.candidateMacs.join("、") || "—"}`
+                : `SVM 分类器未在数据包中检测到摄像头特征，置信度 ${formatPct(detection.confidence)}，当前环境安全。`}
+            </p>
+          </div>
+          <div className="det-result-metrics">
+            <MetricTile label="置信度"    value={formatPct(detection.confidence)} tone={detection.hasCamera ? "amber" : "green"} />
+            <MetricTile label="摄像头数量" value={`${detection.cameraCount}`}       tone={detection.hasCamera ? "amber" : "green"} />
+          </div>
+        </div>
+
+        <div className="split-grid">
+          <MobileFlow
+            stage={stage}
+            captureProgress={captureProgress}
+            captureFailed={scenario.captureStatus === "failed"}
+            result={detection}
+            localization={localization}
+            preciseVisible={scenario.id !== "capture-failed"}
+            onNext={onNext}
+          />
+          <div className="section-card compact-card">
+            <SectionTitle kicker="SVM Decision" title="分类决策详情" text="比特率序列辅助验证 SVM 分类结果。" />
+            <BitrateChart data={primaryGroup?.bitrateSeries ?? []} />
+            <div className="metric-row" style={{ marginTop: 12 }}>
+              <MetricTile label="当前阶段"  value={`Step ${stage + 1} / 4`} />
+              <MetricTile label="CUSUM"    value={cusum.triggered ? "已触发" : "等待"} tone={cusum.triggered ? "amber" : "default"} />
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -611,7 +740,7 @@ function DetectionPage({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   LOCALIZATION PAGE
+   LOCALIZATION PAGE  (Module 3 + Module 4)
 ═══════════════════════════════════════════════════════════════ */
 function LocalizationPage({
   scenario,
@@ -637,57 +766,178 @@ function LocalizationPage({
   onNext: () => void;
 }) {
   const modeLabels: Record<MotionMode, string> = { toward: "正向靠近", reverse: "反向移动", outside: "无目标房间" };
+  const modeDescs: Record<MotionMode, string> = {
+    toward:  "您正在靠近摄像头，比特率呈上升趋势，请缓慢向目标方向移动。",
+    reverse: "请往反方向移动，直到出现新的比特率变化提示。",
+    outside: "当前区域不存在摄像头，可切换到其他房间继续探测。",
+  };
+
+  const motionInstructions = [
+    { step: "01", text: "请站在房间一角，手持手机保持静止", active: stage <= 1 },
+    { step: "02", text: "从当前位置缓慢走向对角，观察比特率变化", active: stage === 2 },
+    { step: "03", text: "若出现骤升/骤降，CUSUM 算法将触发定位", active: stage === 2 },
+    { step: "04", text: "根据指示调整方向，完成精准定位", active: stage >= 3 },
+  ];
 
   return (
     <div className="page-grid">
       <PageBanner
-        kicker="Localization · CUSUM + Motion Assist"
-        title="定位工作台"
-        subtitle="通过模式按钮模拟正向靠近、反向移动和无摄像头三类状态，实时查看雷达与房间标注。"
+        kicker="Module 3 & 4 · 粗略定位 → 精确定位"
+        title="动态雷达定位 & 精准方位探测"
+        subtitle="CUSUM 量化人体移动引发的比特率突变，引导用户完成粗略定位；FFT + 回归推算精确距离与角度。"
         tiles={[
           { label: "识别状态", value: detection.hasCamera ? "发现目标" : "未发现", tone: detection.hasCamera ? "amber" : "green" },
-          { label: "方向角度", value: `${localization.directionDeg.toFixed(1)}°` },
+          { label: "方向角度", value: `${localization.directionDeg.toFixed(1)}°`, tone: "cyan" },
           { label: "距离估计", value: `${localization.distanceMeters || 0} m`, tone: "cyan" },
           { label: "当前模式", value: modeLabels[motionMode] },
         ]}
       />
 
-      <section className="section-card">
-        <div className="control-row">
-          {(["toward", "reverse", "outside"] as const).map((mode) => (
-            <button key={mode} className={motionMode === mode ? "chip active" : "chip"} onClick={() => setMotionMode(mode)}>
-              {modeLabels[mode]}
-            </button>
-          ))}
-          <button className="chip" onClick={() => setStage(0)}>回到第一步</button>
-          <button className="chip" onClick={onNext}>解锁下一步</button>
-        </div>
-      </section>
-
-      <section className="split-grid">
-        <RadarPanel state={localization} bitrate={bitrate} />
-        <RoomLocator state={localization} visible={preciseVisible} />
-      </section>
-
-      <section className="split-grid">
-        <div className="section-card compact-card">
-          <SectionTitle kicker="Decision" title="定位结论" text={localization.instruction} />
-          <div className="metric-row">
-            <MetricTile label="现场场景" value={scenario.name} />
-            <MetricTile label="识别状态" value={detection.hasCamera ? "发现目标" : "未发现"} tone={detection.hasCamera ? "amber" : "green"} />
-            <MetricTile label="方向角度" value={`${localization.directionDeg.toFixed(1)}°`} />
-            <MetricTile label="距离估计" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
+      {/* ── Module 3: CUSUM 粗略定位 ── */}
+      <section className="module-section">
+        <div className="module-label">
+          <span className="mod-num-sm">03</span>
+          <div>
+            <strong>人体移动性动态雷达定位模块</strong>
+            <small>CUSUM 比特率分析 · 粗略定位</small>
           </div>
         </div>
-        <MobileFlow
-          stage={stage}
-          captureProgress={scenario.captureStatus === "failed" ? 20 : 88}
-          captureFailed={scenario.captureStatus === "failed"}
-          result={detection}
-          localization={localization}
-          preciseVisible={preciseVisible}
-          onNext={onNext}
-        />
+
+        {/* Motion guidance instruction card */}
+        <div className="motion-guide-card section-card">
+          <div className="motion-guide-header">
+            <div className="motion-guide-icon">
+              {motionMode === "outside" ? "○" : motionMode === "reverse" ? "←" : "→"}
+            </div>
+            <div>
+              <strong className="motion-guide-title">系统交互指令</strong>
+              <p className="motion-guide-desc">{modeDescs[motionMode]}</p>
+            </div>
+          </div>
+          <div className="motion-steps">
+            {motionInstructions.map((inst) => (
+              <div className={`motion-step ${inst.active ? "active" : ""}`} key={inst.step}>
+                <span>{inst.step}</span>
+                <p>{inst.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="control-row" style={{ marginTop: 16 }}>
+            {(["toward", "reverse", "outside"] as const).map((mode) => (
+              <button key={mode} className={motionMode === mode ? "chip active" : "chip"} onClick={() => setMotionMode(mode)}>
+                {modeLabels[mode]}
+              </button>
+            ))}
+            <button className="chip" onClick={() => setStage(0)}>重置</button>
+            <button className="chip" onClick={onNext}>解锁下一步</button>
+          </div>
+        </div>
+
+        {/* CUSUM Bitrate chart + radar */}
+        <div className="split-grid">
+          <div className="section-card compact-card">
+            <SectionTitle
+              kicker="CUSUM Waveform"
+              title="比特率波形与变化检测"
+              text="人体移动引发画面变化 → 音视频码率骤变 → CUSUM 累积和越阈触发定位判断。"
+            />
+            <BitrateChart data={bitrate} />
+          </div>
+          <RadarPanel state={localization} bitrate={bitrate} />
+        </div>
+      </section>
+
+      {/* ── Module 4: FFT 精准定位 ── */}
+      <section className="module-section">
+        <div className="module-label">
+          <span className="mod-num-sm">04</span>
+          <div>
+            <strong>精准方位探测与可视定位模块</strong>
+            <small>FFT + 指数回归 · 取景框标注</small>
+          </div>
+        </div>
+
+        <div className="split-grid">
+          {/* Phone viewfinder mockup */}
+          <div className="viewfinder-card section-card">
+            <SectionTitle kicker="Camera Viewfinder" title="手机摄像头取景框" text="对准目标方向，利用红外感知辅助确认摄像头具体位置。" />
+            <div className="viewfinder-frame">
+              <div className="vf-corners">
+                <i className="vf-corner tl" />
+                <i className="vf-corner tr" />
+                <i className="vf-corner bl" />
+                <i className="vf-corner br" />
+              </div>
+              <div className="vf-crosshair" />
+              {preciseVisible && (
+                <>
+                  <div className="vf-target-box">
+                    <i className="vf-target-anim" />
+                    <span className="vf-target-label">疑似摄像头</span>
+                  </div>
+                  <div
+                    className="vf-arrow"
+                    style={{ transform: `rotate(${localization.directionDeg - 90}deg)` }}
+                  >
+                    ▲
+                  </div>
+                </>
+              )}
+              <div className="vf-overlays">
+                <span className="vf-signal">
+                  <small>信号强度</small>
+                  <strong>{localization.signalStrength}%</strong>
+                </span>
+                <span className="vf-distance">
+                  <small>距离</small>
+                  <strong>{localization.distanceMeters ? `${localization.distanceMeters} m` : "--"}</strong>
+                </span>
+                <span className="vf-angle">
+                  <small>方向角</small>
+                  <strong>{localization.directionDeg.toFixed(0)}°</strong>
+                </span>
+              </div>
+              {!preciseVisible && (
+                <div className="vf-scanning">
+                  <span>正在扫描…</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Room locator */}
+          <div className="section-card compact-card">
+            <SectionTitle kicker="Room Annotation" title="房间可视标注" text="FFT + 指数回归推算像素变化百分比，计算用户与摄像头的相对距离与方向角。" />
+            <RoomLocator state={localization} visible={preciseVisible} />
+            <div className="metric-row" style={{ marginTop: 12 }}>
+              <MetricTile label="现场场景" value={scenario.name} />
+              <MetricTile label="距离估计" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
+              <MetricTile label="方向角度" value={`${localization.directionDeg.toFixed(1)}°`} />
+              <MetricTile label="信号强度" value={`${localization.signalStrength}%`} tone={localization.signalStrength > 60 ? "green" : "amber"} />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile flow at bottom */}
+        <div className="split-grid">
+          <MobileFlow
+            stage={stage}
+            captureProgress={scenario.captureStatus === "failed" ? 20 : 88}
+            captureFailed={scenario.captureStatus === "failed"}
+            result={detection}
+            localization={localization}
+            preciseVisible={preciseVisible}
+            onNext={onNext}
+          />
+          <div className="section-card compact-card">
+            <SectionTitle kicker="Decision" title="定位结论" text={localization.instruction} />
+            <div className="metric-row">
+              <MetricTile label="识别状态" value={detection.hasCamera ? "发现目标" : "未发现"} tone={detection.hasCamera ? "amber" : "green"} />
+              <MetricTile label="方向角度" value={`${localization.directionDeg.toFixed(1)}°`} />
+              <MetricTile label="距离估计" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
@@ -737,22 +987,45 @@ function MobilePage({
   primaryGroup: ReturnType<typeof groupTraffic>[number] | undefined;
   primaryVector: ReturnType<typeof extractFeatureVector> | undefined;
 }) {
+  const stepDescs = [
+    { num: "01", label: "环境数据感知", desc: "捕获 Wi-Fi 流量，提取四维特征向量" },
+    { num: "02", label: "存在性检测",   desc: "SVM 分类器判定是否存在隐蔽摄像头" },
+    { num: "03", label: "动态雷达定位", desc: "CUSUM 量化比特率变化，粗略定位" },
+    { num: "04", label: "精准方位探测", desc: "FFT 回归计算距离与角度，取景框标注" },
+  ];
+
   return (
     <div className="page-grid">
       <PageBanner
-        kicker="Mobile Flow · 4-Step Detection"
-        title="移动端流程"
-        subtitle="适合录屏展示：右侧控制台切换场景与阶段，左侧手机画面实时联动。"
+        kicker="Mobile Flow · 四大核心模块 · 一键演示"
+        title="移动端完整流程"
+        subtitle="对应四大核心模块：数据感知 → 存在性检测 → 动态雷达定位 → 精准方位探测。适合录屏与答辩现场展示。"
         tiles={[
-          { label: "当前阶段",  value: `Step ${stage + 1}` },
+          { label: "当前模块",  value: stepDescs[Math.min(stage, 3)].label },
           { label: "采集进度",  value: `${captureProgress}%`, tone: "cyan" },
           { label: "CUSUM",    value: cusum.triggered ? "已触发" : "等待", tone: cusum.triggered ? "amber" : "default" },
           { label: "置信度",   value: formatPct(detection.confidence), tone: detection.hasCamera ? "amber" : "green" },
         ]}
       />
 
+      {/* Module step indicator */}
       <section className="section-card">
-        <ScenarioPicker activeId={scenarioId} onSelect={setScenario} compact />
+        <div className="module-stepper">
+          {stepDescs.map((item, i) => (
+            <button
+              key={item.num}
+              className={`mod-step-btn ${i === stage ? "active" : i < stage ? "done" : ""}`}
+              onClick={() => setStage(i)}
+            >
+              <span className="mod-step-num">{item.num}</span>
+              <strong>{item.label}</strong>
+              <small>{item.desc}</small>
+            </button>
+          ))}
+        </div>
+        <div className="control-row" style={{ marginTop: 12 }}>
+          <ScenarioPicker activeId={scenarioId} onSelect={setScenario} compact />
+        </div>
       </section>
 
       <section className="mobile-layout">
@@ -767,14 +1040,10 @@ function MobilePage({
           compact
         />
         <div className="section-card compact-card">
-          <SectionTitle kicker="Controls" title="展示控制台" text="所有按钮都会改变左侧手机画面或下方算法状态。" />
+          <SectionTitle kicker="Controls" title="演示控制台" text="切换模块与场景，左侧手机画面实时联动。" />
           <div className="control-row vertical">
-            <button className="chip" onClick={() => setStage(0)}>采集页</button>
-            <button className="chip" onClick={() => setStage(1)}>识别页</button>
-            <button className="chip" onClick={() => setStage(2)}>方向页</button>
-            <button className="chip" onClick={() => setStage(3)}>标注页</button>
-            <button className={motionMode === "toward"  ? "chip active" : "chip"} onClick={() => setMotionMode("toward")}>正向</button>
-            <button className={motionMode === "reverse" ? "chip active" : "chip"} onClick={() => setMotionMode("reverse")}>反向</button>
+            <button className={motionMode === "toward"  ? "chip active" : "chip"} onClick={() => setMotionMode("toward")}>正向靠近</button>
+            <button className={motionMode === "reverse" ? "chip active" : "chip"} onClick={() => setMotionMode("reverse")}>反向移动</button>
             <button className={boostProgress  ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>采集增强</button>
             <button className={showInspector  ? "chip active" : "chip"} onClick={() => setShowInspector(!showInspector)}>算法详情</button>
           </div>
