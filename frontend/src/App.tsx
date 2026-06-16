@@ -278,8 +278,19 @@ function HeroSection({
 }) {
   return (
     <section className="hero-section">
+      {/* Floating orbs */}
+      <div className="hero-orb orb-1" style={{ top: "15%", left: "5%", width: "280px", height: "280px", background: "radial-gradient(circle, rgba(0,240,255,0.08) 0%, transparent 70%)" }} aria-hidden="true" />
+      <div className="hero-orb orb-2" style={{ bottom: "20%", right: "0%", width: "320px", height: "320px", background: "radial-gradient(circle, rgba(123,0,255,0.10) 0%, transparent 70%)" }} aria-hidden="true" />
+
       {/* Left: copy */}
       <div className="hero-content">
+        {/* LIVE badge */}
+        <div>
+          <span className="live-badge">
+            <span className="live-dot" aria-hidden="true" />
+            LIVE — 实时检测系统
+          </span>
+        </div>
         <p className="eyebrow">802.11 Sensing · SVM Detection · CUSUM Localization</p>
         <h1>CamDetector</h1>
         <h2>隐藏无线摄像头智能感知平台</h2>
@@ -291,9 +302,10 @@ function HeroSection({
           <button className="ghost-action" onClick={onLocate}>查看定位工作台</button>
         </div>
         <div className="hero-badges">
+          <span>Wi-Fi流量分析</span>
+          <span>无需专业设备</span>
+          <span>高精度定位</span>
           <span>合成样本</span>
-          <span>离线演示</span>
-          <span>GitHub Pages</span>
           <span>安全边界</span>
         </div>
       </div>
