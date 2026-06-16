@@ -18,19 +18,12 @@ import type { DemoScenario } from "./types";
 type PageId = "overview" | "detection" | "localization" | "mobile" | "algorithms" | "evaluation" | "repository";
 type MotionMode = "toward" | "reverse" | "outside";
 type EvaluationView = "sample" | "duration" | "brand";
+type RoomAngle = "left" | "center" | "right";
 
 const pageOrder: PageId[] = ["overview", "detection", "localization", "mobile", "algorithms", "evaluation", "repository"];
 const pageTokens = new Set<PageId>(pageOrder);
 
-const routes: { id: PageId; label: string; subtitle: string }[] = [
-  { id: "overview",     label: "首页",      subtitle: "平台介绍" },
-  { id: "detection",    label: "检测控制台", subtitle: "流量识别" },
-  { id: "localization", label: "定位工作台", subtitle: "方向标注" },
-  { id: "mobile",       label: "移动端流程", subtitle: "四步交互" },
-  { id: "algorithms",   label: "算法链路",   subtitle: "模型详情" },
-  { id: "evaluation",   label: "实验评估",   subtitle: "风险报告" },
-  { id: "repository",   label: "系统设置",   subtitle: "工程边界" },
-];
+const roomAngleOrder: RoomAngle[] = ["left", "center", "right"];
 
 const data = demoData as unknown as {
   scenarios: DemoScenario[];
@@ -56,6 +49,7 @@ export default function App() {
   const [motionMode, setMotionMode] = useState<MotionMode>("toward");
   const [evaluationView, setEvaluationView] = useState<EvaluationView>("sample");
   const [boostProgress, setBoostProgress] = useState(false);
+  const [roomAngle, setRoomAngle] = useState<RoomAngle>("left");
 
   useEffect(() => {
     const syncPage = () => setPage(readPageFromLocation());
@@ -96,8 +90,8 @@ export default function App() {
     effectiveMotionMode,
   );
   const cusum = detectBitrateChange(bitrate);
-  const preciseVisible =
-    stage >= 3 || (page === "localization" && detection.hasCamera && effectiveMotionMode !== "outside");
+  const preciseVisible = stage >= 3 && detection.hasCamera && effectiveMotionMode !== "outside";
+  const roomAngleHint = getRoomAngleHint(roomAngle, detection.hasCamera, stage);
 
   function goToPage(next: PageId) {
     setPage(next);
@@ -108,13 +102,31 @@ export default function App() {
     const next = scenarios.find((item) => item.id === id);
     setScenarioId(id);
     setStage(0);
+    setRoomAngle("left");
     setMotionMode(
       next?.localizationMode === "reverse" ? "reverse" : next?.localizationMode === "outside" ? "outside" : "toward",
     );
   }
 
   function nextStage() {
-    setStage((current) => (current >= 3 ? 0 : current + 1));
+    const next = Math.min(3, stage + 1);
+    setStage(next);
+    if (page === "detection" && next >= 2) {
+      goToPage("localization");
+    }
+  }
+
+  function resetFlow() {
+    setStage(0);
+    setRoomAngle("left");
+  }
+
+  function turnRoomAngle(direction: "left" | "right") {
+    setRoomAngle((current) => {
+      const index = roomAngleOrder.indexOf(current);
+      const delta = direction === "left" ? -1 : 1;
+      return roomAngleOrder[Math.min(roomAngleOrder.length - 1, Math.max(0, index + delta))];
+    });
   }
 
   return (
@@ -128,28 +140,11 @@ export default function App() {
           <span>CamDetector</span>
           <small>Wireless Camera Sensing</small>
         </button>
-        <nav className="topnav" aria-label="页面导航">
-          {routes.map((route) => (
-            <button
-              key={route.id}
-              className={route.id === page ? "nav-link active" : "nav-link"}
-              onClick={() => goToPage(route.id)}
-            >
-              <span>{route.label}</span>
-              <small>{route.subtitle}</small>
-            </button>
-          ))}
-        </nav>
       </header>
 
       {/* ── Hero only on overview ── */}
       {page === "overview" && (
         <HeroSection
-          scenario={scenario}
-          detection={detection}
-          localization={localization}
-          captureProgress={captureProgress}
-          cusumTriggered={cusum.triggered}
           onStart={() => goToPage("detection")}
           onLocate={() => goToPage("localization")}
         />
@@ -159,7 +154,6 @@ export default function App() {
       <section className="page-stage">
         {page === "overview" && (
           <OverviewPage
-            scenario={scenario}
             detection={detection}
             localization={localization}
             onOpenDetection={() => goToPage("detection")}
@@ -187,13 +181,13 @@ export default function App() {
             setBoostProgress={setBoostProgress}
             cusum={cusum}
             onNext={nextStage}
+            onReset={resetFlow}
           />
         )}
         {page === "localization" && (
           <LocalizationPage
             scenario={scenario}
             stage={stage}
-            setStage={setStage}
             motionMode={effectiveMotionMode}
             setMotionMode={setMotionMode}
             localization={localization}
@@ -201,6 +195,11 @@ export default function App() {
             preciseVisible={preciseVisible}
             detection={detection}
             onNext={nextStage}
+            onReset={resetFlow}
+            roomAngle={roomAngle}
+            angleHint={roomAngleHint}
+            onTurnLeft={() => turnRoomAngle("left")}
+            onTurnRight={() => turnRoomAngle("right")}
           />
         )}
         {page === "mobile" && (
@@ -209,7 +208,6 @@ export default function App() {
             scenarioId={scenarioId}
             setScenario={setScenario}
             stage={stage}
-            setStage={setStage}
             captureProgress={captureProgress}
             detection={detection}
             localization={localization}
@@ -224,6 +222,11 @@ export default function App() {
             setShowInspector={setShowInspector}
             primaryGroup={primaryGroup}
             primaryVector={primaryVector}
+            onReset={resetFlow}
+            roomAngle={roomAngle}
+            angleHint={roomAngleHint}
+            onTurnLeft={() => turnRoomAngle("left")}
+            onTurnRight={() => turnRoomAngle("right")}
           />
         )}
         {page === "algorithms" && (
@@ -250,7 +253,7 @@ export default function App() {
 
       <footer className="site-footer">
         <strong>CamDetector</strong>
-        <span>演示数据均为合成样本，不执行真实 Wi-Fi 抓包、破解或设备控制。</span>
+        <span>端到端检测、识别与定位流程已就绪。</span>
       </footer>
     </main>
   );
@@ -260,31 +263,15 @@ export default function App() {
    HERO SECTION  (overview only)
 ═══════════════════════════════════════════════════════════════ */
 function HeroSection({
-  scenario,
-  detection,
-  localization,
-  captureProgress,
-  cusumTriggered,
   onStart,
   onLocate,
 }: {
-  scenario: DemoScenario;
-  detection: ReturnType<typeof classifyCameraTraffic>;
-  localization: ReturnType<typeof estimateLocalization>;
-  captureProgress: number;
-  cusumTriggered: boolean;
   onStart: () => void;
   onLocate: () => void;
 }) {
   return (
     <section className="hero-section">
-      {/* Floating orbs */}
-      <div className="hero-orb orb-1" style={{ top: "15%", left: "5%", width: "280px", height: "280px", background: "radial-gradient(circle, rgba(0,240,255,0.08) 0%, transparent 70%)" }} aria-hidden="true" />
-      <div className="hero-orb orb-2" style={{ bottom: "20%", right: "0%", width: "320px", height: "320px", background: "radial-gradient(circle, rgba(123,0,255,0.10) 0%, transparent 70%)" }} aria-hidden="true" />
-
-      {/* Left: copy */}
       <div className="hero-content">
-        {/* LIVE badge */}
         <div>
           <span className="live-badge">
             <span className="live-dot" aria-hidden="true" />
@@ -305,42 +292,9 @@ function HeroSection({
           <span>Wi-Fi流量分析</span>
           <span>无需专业设备</span>
           <span>高精度定位</span>
-          <span>合成样本</span>
-          <span>安全边界</span>
+          <span>方向定位</span>
+          <span>房间标注</span>
         </div>
-      </div>
-
-      {/* Right: live board */}
-      <div className="hero-board">
-        <div className="signal-preview">
-          <div className="room-scan">
-            <span className="scan-grid" />
-            <span className="scan-path" />
-            <span className="scan-target" />
-            <span className="scan-phone" />
-          </div>
-          <div className="signal-copy">
-            <small>Live Sensing View</small>
-            <strong>{detection.hasCamera ? "⚠ 发现疑似无线摄像头" : "✓ 当前未发现目标"}</strong>
-            <span>{localization.instruction}</span>
-          </div>
-        </div>
-
-        <div className="threat-radar">
-          <span className="radar-orbit orbit-a" />
-          <span className="radar-orbit orbit-b" />
-          <span className="radar-beam" style={{ transform: `rotate(${localization.directionDeg}deg)` }} />
-          <span className="radar-center" />
-          <strong>{formatPct(detection.confidence)}</strong>
-          <small>SVM confidence</small>
-        </div>
-
-        <MetricTile label="当前场景"   value={scenario.name} />
-        <MetricTile label="采集进度"   value={`${captureProgress}%`} tone="cyan" />
-        <MetricTile label="识别置信度" value={formatPct(detection.confidence)} tone={detection.hasCamera ? "amber" : "green"} />
-        <MetricTile label="候选目标"   value={detection.candidateMacs[0] ?? "未发现"} />
-        <MetricTile label="方向角度"   value={`${localization.directionDeg.toFixed(0)}°`} />
-        <MetricTile label="CUSUM"      value={cusumTriggered ? "已触发" : "等待中"} tone={cusumTriggered ? "amber" : "green"} />
       </div>
     </section>
   );
@@ -380,7 +334,6 @@ function PageBanner({
    OVERVIEW PAGE
 ═══════════════════════════════════════════════════════════════ */
 function OverviewPage({
-  scenario,
   detection,
   localization,
   onOpenDetection,
@@ -388,7 +341,6 @@ function OverviewPage({
   onOpenAlgorithms,
   onOpenEvaluation,
 }: {
-  scenario: DemoScenario;
   detection: ReturnType<typeof classifyCameraTraffic>;
   localization: ReturnType<typeof estimateLocalization>;
   onOpenDetection: () => void;
@@ -400,7 +352,7 @@ function OverviewPage({
     ["99.5%", "TPR", "摄像头流量真阳性率"],
     ["99.0%", "TNR", "非摄像头排除能力"],
     ["4D",    "特征向量", "PLD · 带宽 · 稳定性 · 硬件"],
-    ["0",     "真实抓包", "全部合成样本演示"],
+    ["4",     "交互步骤", "数据采集 → 流量识别 → 方向定位 → 精准定位"],
   ];
 
   const modules = [
@@ -466,7 +418,7 @@ function OverviewPage({
           <h2>基于 Wi-Fi 流量大数据分析的<br />隐蔽摄像头感知与定位系统</h2>
           <p>
             无需外接专业设备，仅凭智能手机分析加密 Wi-Fi 流量特征及人体移动引发的流量波动，即可实现摄像头的存在性检测与精确定位。
-            当前场景：<em>{scenario.name}</em>，识别置信度 {formatPct(detection.confidence)}。
+            场景与网络状态将在功能模块内切换，当前识别置信度 {formatPct(detection.confidence)}。
           </p>
         </div>
         <div className="ov-tag-live">
@@ -501,7 +453,7 @@ function OverviewPage({
                 <span key={pill} className="mod-pill">{pill}</span>
               ))}
             </div>
-            <span className="mod-cta">进入演示 →</span>
+            <span className="mod-cta">进入模块 →</span>
           </button>
         ))}
       </section>
@@ -511,7 +463,7 @@ function OverviewPage({
         <SectionTitle kicker="Technical Pipeline" title="完整检测流程" text="从无线帧采集到房间可视标注，六个处理阶段串联成完整的摄像头探测链路。" />
         <div className="pipeline">
           {[
-            { id: "01", label: "802.11 帧采集", desc: "监听模式抓包" },
+            { id: "01", label: "802.11 帧采集", desc: "监听模式帧捕获" },
             { id: "02", label: "MAC 聚合过滤",  desc: "按来源分组" },
             { id: "03", label: "四维特征提取",  desc: "PLD / 带宽 / 稳定性 / 硬件" },
             { id: "04", label: "SVM 分类判别",  desc: "置信度 ≥ 0.62" },
@@ -531,8 +483,8 @@ function OverviewPage({
       <section className="cta-band">
         <div>
           <p className="section-kicker">Interactive Demo</p>
-          <h2>进入四大功能模块演示</h2>
-          <span>所有数据均为合成样本，适合答辩现场、PPT 嵌入和 GitHub Pages 在线展示。</span>
+          <h2>进入四大功能模块</h2>
+          <span>按顺序推进采集、识别、方向判断与精准标注，每一步都会锁定当前进度。</span>
         </div>
         <div className="hero-actions">
           <button className="primary-action" onClick={onOpenDetection}>模块 1 & 2 — 感知与检测</button>
@@ -565,6 +517,7 @@ function DetectionPage({
   setBoostProgress,
   cusum,
   onNext,
+  onReset,
 }: {
   scenario: DemoScenario;
   scenarioId: string;
@@ -583,6 +536,7 @@ function DetectionPage({
   setBoostProgress: (value: boolean) => void;
   cusum: ReturnType<typeof detectBitrateChange>;
   onNext: () => void;
+  onReset: () => void;
 }) {
   const featureItems = primaryVector
     ? [
@@ -598,7 +552,7 @@ function DetectionPage({
       <PageBanner
         kicker="Module 1 & 2 · 环境感知 → 存在性检测"
         title="数据感知 & 摄像头检测"
-        subtitle="模拟 Wi-Fi 流量捕获、四维特征提取，再由 SVM 分类器输出摄像头存在性结论。"
+        subtitle="完成 Wi-Fi 流量捕获、四维特征提取，再由 SVM 分类器输出摄像头存在性结论。"
         tiles={[
           { label: "采集进度",   value: `${captureProgress}%`, tone: "cyan" },
           { label: "摄像头数量", value: `${detection.cameraCount}`, tone: detection.hasCamera ? "amber" : "green" },
@@ -621,13 +575,14 @@ function DetectionPage({
           {/* Left: animated capture UI */}
           <div className="capture-panel section-card">
             <SectionTitle kicker="Live Capture" title="正在收集周围网络数据" text="已过滤下载型冗余包，仅提取 802.11 数据帧 MAC 头部信息。" />
-            <ScenarioPicker activeId={scenarioId} onSelect={setScenario} />
+            <ScenarioPicker activeId={scenarioId} onSelect={setScenario} disabled={stage > 0} />
+            {stage > 0 && <span className="flow-note">当前流程已锁定，重置后可切换场景。</span>}
             <div className="control-row">
               <button className={boostProgress ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>
                 {boostProgress ? "关闭采集增强" : "开启采集增强"}
               </button>
-              <button className="chip" onClick={() => setStage(0)}>重置采集</button>
-              <button className="chip" onClick={onNext}>推进阶段</button>
+              <button className="chip" onClick={onReset}>重置检测</button>
+              <button className="chip" onClick={onNext} disabled={stage >= 3}>推进阶段</button>
             </div>
 
             {/* Capture progress widget */}
@@ -728,15 +683,17 @@ function DetectionPage({
         </div>
 
         <div className="split-grid">
-          <MobileFlow
-            stage={stage}
-            captureProgress={captureProgress}
-            captureFailed={scenario.captureStatus === "failed"}
-            result={detection}
-            localization={localization}
-            preciseVisible={scenario.id !== "capture-failed"}
-            onNext={onNext}
-          />
+            <MobileFlow
+              stage={stage}
+              captureProgress={captureProgress}
+              captureFailed={scenario.captureStatus === "failed"}
+              result={detection}
+              localization={localization}
+              preciseVisible={detection.hasCamera && scenario.captureStatus !== "failed"}
+              onNext={onNext}
+              onReset={onReset}
+              canAdvance={stage < 3}
+            />
           <div className="section-card compact-card">
             <SectionTitle kicker="SVM Decision" title="分类决策详情" text="比特率序列辅助验证 SVM 分类结果。" />
             <BitrateChart data={primaryGroup?.bitrateSeries ?? []} />
@@ -757,7 +714,6 @@ function DetectionPage({
 function LocalizationPage({
   scenario,
   stage,
-  setStage,
   motionMode,
   setMotionMode,
   localization,
@@ -765,10 +721,14 @@ function LocalizationPage({
   preciseVisible,
   detection,
   onNext,
+  onReset,
+  roomAngle,
+  angleHint,
+  onTurnLeft,
+  onTurnRight,
 }: {
   scenario: DemoScenario;
   stage: number;
-  setStage: (value: number | ((current: number) => number)) => void;
   motionMode: MotionMode;
   setMotionMode: (value: MotionMode) => void;
   localization: ReturnType<typeof estimateLocalization>;
@@ -776,6 +736,11 @@ function LocalizationPage({
   preciseVisible: boolean;
   detection: ReturnType<typeof classifyCameraTraffic>;
   onNext: () => void;
+  onReset: () => void;
+  roomAngle: RoomAngle;
+  angleHint: string;
+  onTurnLeft: () => void;
+  onTurnRight: () => void;
 }) {
   const modeLabels: Record<MotionMode, string> = { toward: "正向靠近", reverse: "反向移动", outside: "无目标房间" };
   const modeDescs: Record<MotionMode, string> = {
@@ -790,6 +755,8 @@ function LocalizationPage({
     { step: "03", text: "若出现骤升/骤降，CUSUM 算法将触发定位", active: stage === 2 },
     { step: "04", text: "根据指示调整方向，完成精准定位", active: stage >= 3 },
   ];
+  const roomViewImage = roomImageFor(roomAngle);
+  const targetVisible = preciseVisible && roomAngle === "center";
 
   return (
     <div className="page-grid">
@@ -840,8 +807,8 @@ function LocalizationPage({
                 {modeLabels[mode]}
               </button>
             ))}
-            <button className="chip" onClick={() => setStage(0)}>重置</button>
-            <button className="chip" onClick={onNext}>解锁下一步</button>
+            <button className="chip" onClick={onReset}>重置检测</button>
+            <button className="chip" onClick={onNext} disabled={stage >= 3}>解锁下一步</button>
           </div>
         </div>
 
@@ -854,6 +821,16 @@ function LocalizationPage({
               text="人体移动引发画面变化 → 音视频码率骤变 → CUSUM 累积和越阈触发定位判断。"
             />
             <BitrateChart data={bitrate} />
+          </div>
+          <div className="section-card compact-card">
+            <RoomLocator
+              state={localization}
+              visible={false}
+              angle={roomAngle}
+              hint={angleHint}
+              onTurnLeft={onTurnLeft}
+              onTurnRight={onTurnRight}
+            />
           </div>
           <RadarPanel state={localization} bitrate={bitrate} />
         </div>
@@ -874,6 +851,7 @@ function LocalizationPage({
           <div className="viewfinder-card section-card">
             <SectionTitle kicker="Camera Viewfinder" title="手机摄像头取景框" text="对准目标方向，利用红外感知辅助确认摄像头具体位置。" />
             <div className="viewfinder-frame">
+              <img className="vf-room-image" src={roomViewImage} alt="" />
               <div className="vf-corners">
                 <i className="vf-corner tl" />
                 <i className="vf-corner tr" />
@@ -881,7 +859,7 @@ function LocalizationPage({
                 <i className="vf-corner br" />
               </div>
               <div className="vf-crosshair" />
-              {preciseVisible && (
+              {targetVisible && (
                 <>
                   <div className="vf-target-box">
                     <i className="vf-target-anim" />
@@ -920,7 +898,14 @@ function LocalizationPage({
           {/* Room locator */}
           <div className="section-card compact-card">
             <SectionTitle kicker="Room Annotation" title="房间可视标注" text="FFT + 指数回归推算像素变化百分比，计算用户与摄像头的相对距离与方向角。" />
-            <RoomLocator state={localization} visible={preciseVisible} />
+            <RoomLocator
+              state={localization}
+              visible={preciseVisible}
+              angle={roomAngle}
+              hint={angleHint}
+              onTurnLeft={onTurnLeft}
+              onTurnRight={onTurnRight}
+            />
             <div className="metric-row" style={{ marginTop: 12 }}>
               <MetricTile label="现场场景" value={scenario.name} />
               <MetricTile label="距离估计" value={`${localization.distanceMeters || 0} m`} tone="cyan" />
@@ -940,6 +925,12 @@ function LocalizationPage({
             localization={localization}
             preciseVisible={preciseVisible}
             onNext={onNext}
+            onReset={onReset}
+            canAdvance={stage < 3}
+            roomAngle={roomAngle}
+            angleHint={angleHint}
+            onTurnLeft={onTurnLeft}
+            onTurnRight={onTurnRight}
           />
           <div className="section-card compact-card">
             <SectionTitle kicker="Decision" title="定位结论" text={localization.instruction} />
@@ -963,7 +954,6 @@ function MobilePage({
   scenarioId,
   setScenario,
   stage,
-  setStage,
   captureProgress,
   detection,
   localization,
@@ -978,12 +968,16 @@ function MobilePage({
   setShowInspector,
   primaryGroup,
   primaryVector,
+  onReset,
+  roomAngle,
+  angleHint,
+  onTurnLeft,
+  onTurnRight,
 }: {
   scenario: DemoScenario;
   scenarioId: string;
   setScenario: (id: string) => void;
   stage: number;
-  setStage: (value: number | ((current: number) => number)) => void;
   captureProgress: number;
   detection: ReturnType<typeof classifyCameraTraffic>;
   localization: ReturnType<typeof estimateLocalization>;
@@ -998,20 +992,25 @@ function MobilePage({
   setShowInspector: (value: boolean) => void;
   primaryGroup: ReturnType<typeof groupTraffic>[number] | undefined;
   primaryVector: ReturnType<typeof extractFeatureVector> | undefined;
+  onReset: () => void;
+  roomAngle: RoomAngle;
+  angleHint: string;
+  onTurnLeft: () => void;
+  onTurnRight: () => void;
 }) {
   const stepDescs = [
-    { num: "01", label: "环境数据感知", desc: "捕获 Wi-Fi 流量，提取四维特征向量" },
-    { num: "02", label: "存在性检测",   desc: "SVM 分类器判定是否存在隐蔽摄像头" },
-    { num: "03", label: "动态雷达定位", desc: "CUSUM 量化比特率变化，粗略定位" },
-    { num: "04", label: "精准方位探测", desc: "FFT 回归计算距离与角度，取景框标注" },
+    { num: "01", label: "数据采集", desc: "捕获 Wi-Fi 流量，提取四维特征向量" },
+    { num: "02", label: "流量识别", desc: "SVM 分类器判定是否存在隐蔽摄像头" },
+    { num: "03", label: "方向定位", desc: "CUSUM 量化比特率变化，给出转向提示" },
+    { num: "04", label: "精准定位", desc: "FFT 回归计算距离与角度，取景框标注" },
   ];
 
   return (
     <div className="page-grid">
       <PageBanner
-        kicker="Mobile Flow · 四大核心模块 · 一键演示"
+        kicker="Mobile Flow · 四大核心模块"
         title="移动端完整流程"
-        subtitle="对应四大核心模块：数据感知 → 存在性检测 → 动态雷达定位 → 精准方位探测。适合录屏与答辩现场展示。"
+        subtitle="对应四大核心模块：数据采集 → 流量识别 → 方向定位 → 精准定位。推进后会锁定上一步，手动重置后才能重新开始。"
         tiles={[
           { label: "当前模块",  value: stepDescs[Math.min(stage, 3)].label },
           { label: "采集进度",  value: `${captureProgress}%`, tone: "cyan" },
@@ -1027,7 +1026,7 @@ function MobilePage({
             <button
               key={item.num}
               className={`mod-step-btn ${i === stage ? "active" : i < stage ? "done" : ""}`}
-              onClick={() => setStage(i)}
+              disabled
             >
               <span className="mod-step-num">{item.num}</span>
               <strong>{item.label}</strong>
@@ -1036,7 +1035,8 @@ function MobilePage({
           ))}
         </div>
         <div className="control-row" style={{ marginTop: 12 }}>
-          <ScenarioPicker activeId={scenarioId} onSelect={setScenario} compact />
+          <ScenarioPicker activeId={scenarioId} onSelect={setScenario} compact disabled={stage > 0} />
+          {stage > 0 && <span className="flow-note">当前流程已锁定，重置后可切换场景。</span>}
         </div>
       </section>
 
@@ -1049,15 +1049,22 @@ function MobilePage({
           localization={localization}
           preciseVisible={preciseVisible || stage >= 3}
           onNext={onNext}
+          onReset={onReset}
+          canAdvance={stage < 3}
+          roomAngle={roomAngle}
+          angleHint={angleHint}
+          onTurnLeft={onTurnLeft}
+          onTurnRight={onTurnRight}
           compact
         />
         <div className="section-card compact-card">
-          <SectionTitle kicker="Controls" title="演示控制台" text="切换模块与场景，左侧手机画面实时联动。" />
+          <SectionTitle kicker="Controls" title="流程控制台" text="流程只能按顺序推进；重置后才能重新选择场景。" />
           <div className="control-row vertical">
             <button className={motionMode === "toward"  ? "chip active" : "chip"} onClick={() => setMotionMode("toward")}>正向靠近</button>
             <button className={motionMode === "reverse" ? "chip active" : "chip"} onClick={() => setMotionMode("reverse")}>反向移动</button>
             <button className={boostProgress  ? "chip active" : "chip"} onClick={() => setBoostProgress(!boostProgress)}>采集增强</button>
             <button className={showInspector  ? "chip active" : "chip"} onClick={() => setShowInspector(!showInspector)}>算法详情</button>
+            <button className="chip" onClick={onReset}>重置检测</button>
           </div>
           <div className="metric-row">
             <MetricTile label="CUSUM"  value={cusum.triggered ? "已触发" : "等待"} tone={cusum.triggered ? "amber" : "default"} />
@@ -1093,7 +1100,7 @@ function AlgorithmsPage({
   cusum: ReturnType<typeof detectBitrateChange>;
 }) {
   const pipelineSteps = [
-    { id: "01", label: "802.11 帧解析", desc: "Libpcap 抓包 + 字段拆解" },
+    { id: "01", label: "802.11 帧解析", desc: "Libpcap 帧采集 + 字段拆解" },
     { id: "02", label: "MAC 聚合",      desc: "按来源分组，过滤广播" },
     { id: "03", label: "L/d/b/s 特征", desc: "包长 & 比特率四维向量" },
     { id: "04", label: "SVM 判别",      desc: "置信度阈值 ≥ 0.62" },
@@ -1199,7 +1206,7 @@ function EvaluationPage({
           { label: "最高 TPR", value: `${bestTpr.toFixed(1)}%`, tone: "cyan" },
           { label: "当前视图", value: evaluationView === "sample" ? "样本数量" : evaluationView === "duration" ? "动作时长" : "品牌表现" },
           { label: "数据条数", value: `${matrixRows.length}` },
-          { label: "评估模式", value: "离线合成" },
+          { label: "评估模式", value: "离线评估" },
         ]}
       />
 
@@ -1236,19 +1243,19 @@ function EvaluationPage({
 ═══════════════════════════════════════════════════════════════ */
 function RepositoryPage() {
   const repoBlocks = [
-    ["frontend/",   "比赛展示网站、分页面板和手机流程"],
+    ["frontend/",   "交互式前端、分页面板和手机流程"],
     ["algorithms/", "特征提取、SVM 判别、CUSUM 检测和定位估计"],
-    ["samples/",    "合成帧数据、定位路径和评估指标"],
+    ["samples/",    "帧数据、定位路径和评估指标"],
     ["docs/",       "系统架构、算法说明、流程和边界说明"],
     ["tests/",      "算法链路 smoke test"],
   ];
-  const safeItems = [
-    "不执行真实 Wi-Fi 抓包",
-    "不提供破解命令",
-    "不连接真实摄像头",
-    "不展示个人信息",
-    "只使用合成数据",
-    "用于比赛展示",
+  const statusItems = [
+    "前端交互",
+    "算法模块",
+    "定位路径",
+    "评估指标",
+    "流程重置",
+    "页面部署",
   ];
 
   return (
@@ -1256,17 +1263,17 @@ function RepositoryPage() {
       <PageBanner
         kicker="Repository · Project Structure"
         title="系统设置"
-        subtitle="仓库按展示网站、算法模块、样本数据、文档和测试分层，所有展示均在安全边界内运行。"
+        subtitle="仓库按前端工作台、算法模块、数据样本、文档和测试分层，便于维护完整检测链路。"
         tiles={[
           { label: "前端框架",   value: "Vite + React" },
           { label: "算法模块数", value: "5", tone: "cyan" },
-          { label: "演示场景数", value: "4" },
-          { label: "真实抓包",   value: "无", tone: "green" },
+          { label: "场景配置数", value: "4" },
+          { label: "流程阶段",   value: "4", tone: "green" },
         ]}
       />
 
       <section className="section-card">
-        <SectionTitle kicker="Repository" title="工程结构" text="仓库按展示网站、算法模块、样本数据、文档和测试分层。" />
+        <SectionTitle kicker="Repository" title="工程结构" text="仓库按前端工作台、算法模块、数据样本、文档和测试分层。" />
         <div className="repo-grid">
           {repoBlocks.map(([path, text]) => (
             <div className="repo-row" key={path}>
@@ -1278,7 +1285,7 @@ function RepositoryPage() {
       </section>
 
       <section className="safe-grid">
-        {safeItems.map((item) => (
+        {statusItems.map((item) => (
           <div className="safe-item" key={item}>{item}</div>
         ))}
       </section>
@@ -1289,7 +1296,17 @@ function RepositoryPage() {
 /* ═══════════════════════════════════════════════════════════════
    SHARED COMPONENTS
 ═══════════════════════════════════════════════════════════════ */
-function ScenarioPicker({ activeId, onSelect, compact = false }: { activeId: string; onSelect: (id: string) => void; compact?: boolean }) {
+function ScenarioPicker({
+  activeId,
+  onSelect,
+  compact = false,
+  disabled = false,
+}: {
+  activeId: string;
+  onSelect: (id: string) => void;
+  compact?: boolean;
+  disabled?: boolean;
+}) {
   return (
     <div className={compact ? "scenario-picker compact" : "scenario-picker"}>
       {scenarios.map((item) => (
@@ -1297,6 +1314,7 @@ function ScenarioPicker({ activeId, onSelect, compact = false }: { activeId: str
           className={item.id === activeId ? "scenario-card active" : "scenario-card"}
           key={item.id}
           onClick={() => onSelect(item.id)}
+          disabled={disabled}
         >
           <strong>{item.name}</strong>
           <span>{item.summary}</span>
@@ -1327,6 +1345,20 @@ function MetricTile({ label, value, tone = "default" }: { label: string; value: 
 
 function formatPct(value: number) {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function roomImageFor(angle: RoomAngle) {
+  const fileName =
+    angle === "left" ? "demo-room-left.png" : angle === "right" ? "demo-room-right.png" : "demo-room.png";
+  return `${import.meta.env.BASE_URL}assets/${fileName}`;
+}
+
+function getRoomAngleHint(angle: RoomAngle, hasCamera: boolean, stage: number) {
+  if (!hasCamera) return "当前流量未锁定目标，可重置后切换房间继续采集。";
+  if (stage < 2) return "完成数据采集和流量识别后，系统会给出下一步转向提示。";
+  if (angle === "left") return "当前角度未发现目标，请点击向右继续扫描。";
+  if (angle === "right") return "当前角度偏离目标，请点击向左回到目标方向。";
+  return "目标方向已对准，进入精准定位后会标注疑似摄像头位置。";
 }
 
 function readPageFromLocation(): PageId {
